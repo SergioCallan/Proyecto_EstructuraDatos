@@ -12,6 +12,14 @@ struct Hora{
 	int min;
 };
 
+struct Paciente{
+	string dni;
+	string nombres;
+	string apellidos;
+	string celular;
+	struct Paciente *sgte;
+};
+
 struct Cita{
 	int idmedico;
 	int id;	
@@ -24,7 +32,19 @@ struct Cita{
 	struct Cita *sgte;
 };
 
+struct Personal{
+	struct Personal *ant;
+	string id;
+	string nombre;
+	string apellidos;
+	int salario;
+	string especialidad;
+	struct Personal *sgte;
+};
+
+typedef struct Personal *TpPersonal;
 typedef struct Cita *TpCita;
+typedef struct Paciente *TpPaciente;
 
 TpCita crearCita(){
 	system("cls");
@@ -72,18 +92,118 @@ int menuPrincipal(){
 	return opc;
 }
 
-void menuPaciente(){
+TpPaciente registroPaciente(){
+	TpPaciente nuevo = NULL;
+	nuevo = new(struct Paciente);
+	cout<<"Ingrese el dni:"<<endl;
+	cin>>nuevo->dni;
+	cout<<"Ingrese los nombres:"<<endl;
+	cin>>nuevo->nombres;
+	cout<<"Ingrese los apellidos:"<<endl;
+	cin>>nuevo->apellidos;
+	cout<<"Ingrese el numero de telefono:"<<endl;
+	cin>>nuevo->celular;
+	nuevo->sgte = NULL;
+	cout<<"El paciente ha sido registrado correctamente."<<endl;
+	return nuevo;
+}
+
+void insertarPaciente(TpPaciente &paciente){
+	TpPaciente nuevo = registroPaciente(), p=paciente;
+	if(paciente==NULL){
+		paciente = nuevo;
+	}else{
+		while(p->sgte != NULL)
+			p=p->sgte;
+		p->sgte = nuevo;
+	}
+}
+
+
+
+void menuPaciente(TpPaciente &paciente){
 	int opc;
+	
 	do{
 		cout<< "\n\t1. Registrar Paciente\n";
 		cout<< "\t2. Buscar, modificar o borrar historial medico\n";
 		cout<< "\t3. Regresar\n";
 		cin>> opc;
+		switch(opc){
+			case 1:{
+				insertarPaciente(paciente);
+				break;
+			}
+			case 2:{
+				
+				break;
+			}
+			case 3:{
+				break;
+			}
+		}
 	} while(opc!=3);
 }
 
-void menuMedico(){
+TpPersonal registroPersonal(){
+	TpPersonal nuevo = NULL;
+	nuevo = new(struct Personal);
+	cout<<"Ingrese el id:"<<endl;
+	cin>>nuevo->id;
+	cout<<"Ingrese los nombres:"<<endl;
+	cin>>nuevo->nombre;
+	cout<<"Ingrese los apellidos:"<<endl;
+	cin>>nuevo->apellidos;
+	cout<<"Ingrese el salario:"<<endl;
+	cin>>nuevo->salario;
+	cout<<"Ingrese la especialidad:"<<endl;
+	cin>>nuevo->especialidad;
+	nuevo->ant = NULL;
+	nuevo->sgte = NULL;
+	return nuevo;
+}
+
+void insertarPersonal(TpPersonal &personal){
+	int pos;
+	TpPersonal nuevo = NULL, p=personal;
+	nuevo = registroPersonal();
+	if(personal == NULL){
+		nuevo->ant = nuevo;
+		nuevo->sgte = nuevo;
+		personal = nuevo;
+	}else{
+		cout<<"Ingrese la posicion del horario del medico"<<endl;
+		cin>>pos;
+		if(pos==1){
+			personal->ant->sgte = nuevo;
+			nuevo->ant = personal->ant;
+			nuevo->sgte = personal;
+			personal->ant = nuevo;
+			personal=nuevo;
+		}else{
+			int x=1;
+			bool encontrado = false;
+			while(p->sgte != personal && x!=pos){
+				p = p->sgte;
+				x++;
+			}
+			if(x==pos){
+				p->ant->sgte = nuevo;
+				nuevo->ant = p->ant;
+				p->ant = nuevo;
+				nuevo->sgte = p;
+			}else{
+				cout<<"La longitud de la lista es menor a la posicion buscada."<<endl;
+			}
+			
+		}
+	}
+}
+
+
+void menuMedico(TpPersonal &personal){
 	int opc;
+	
 	do{
 		cout<< "1. Registrar Personal\n";
 		cout<< "2. Registrar Medicinas\n";
@@ -94,8 +214,16 @@ void menuMedico(){
 		cout<< "7. Regresar\n";
 		cin>> opc;
 		switch(opc){
+			case 1:{
+				insertarPersonal(personal);
+				break;
+			}
+			case 2:{
+				
+				break;
+			}
 			case 3:{
-				encolarCita(cita);
+				
 				break;
 			}
 			case 4:{
@@ -114,16 +242,18 @@ void menuMedico(){
 
 int main(){
 	int opc;
+	TpPersonal personal = NULL;
+	TpPaciente paciente = NULL;
 	TpCita cita=NULL;
 	do{
 		opc=menuPrincipal();
 		switch(opc){
 			case 1:{
-				menuPaciente();
+				menuPaciente(paciente);
 				break;
 			}
 			case 2:{
-				menuMedico();
+				menuMedico(personal);
 				break;
 			}
 		}
