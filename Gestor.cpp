@@ -119,6 +119,14 @@ void insertarPaciente(TpPaciente &paciente){
 	}
 }
 
+void verListaPaciente(TpPaciente lista){
+	int i=0; TpPaciente p = lista;
+	cout<<"DNI - NOMBRES - APELLIDOS - CELULAR"<<endl;
+	while(p != NULL){
+		cout<< " "<<i+1<<") "<<p->dni<<" - "<<p->nombres<<" - "<<p->apellidos<<" - "<<p->celular<< endl;
+		p=p->sgte;
+		i++;	
+}}
 
 
 void menuPaciente(TpPaciente &paciente){
@@ -132,6 +140,7 @@ void menuPaciente(TpPaciente &paciente){
 		switch(opc){
 			case 1:{
 				insertarPaciente(paciente);
+				verListaPaciente(paciente);
 				break;
 			}
 			case 2:{
@@ -163,6 +172,35 @@ TpPersonal registroPersonal(){
 	return nuevo;
 }
 
+
+
+void verListaPersonal(TpPersonal lista){
+	int i=0;
+    TpPersonal p=lista;
+    if(lista==NULL){
+    	cout<<"lista vacia"<<endl<<endl;
+	}else{
+		cout<<"ID - NOMBRES - APELLIDOS - SALARIO - ESPECIALIDAD"<<endl;
+    do{
+        cout<< " "<<i+1<<") "<<p->id<<" - "<<p->nombre<<" - "<<p->apellidos<<" - "<<p->salario<<" - "<<p->especialidad<< endl;
+        p=p->sgte;
+        i++;
+    } while ( p!= lista);
+}}
+
+bool existeUnPersonal(TpPersonal personal){
+	int i = 1; TpPersonal p = personal; bool existe=false;
+	while( p->sgte != personal){
+		p=p->sgte;
+		i++;
+	}
+    
+    if(i==1){
+    	existe = true;
+	}
+	return existe;
+}
+
 void insertarPersonal(TpPersonal &personal){
 	int pos;
 	TpPersonal nuevo = NULL, p=personal;
@@ -175,23 +213,33 @@ void insertarPersonal(TpPersonal &personal){
 		cout<<"Ingrese la posicion del horario del medico"<<endl;
 		cin>>pos;
 		if(pos==1){
-			personal->ant->sgte = nuevo;
-			nuevo->ant = personal->ant;
-			nuevo->sgte = personal;
-			personal->ant = nuevo;
-			personal=nuevo;
+			if(existeUnPersonal(personal)){
+				nuevo->sgte = personal;
+				nuevo->ant = personal;
+				personal->sgte = nuevo;
+				personal->ant = nuevo;
+				personal = nuevo;
+			}else{
+				personal->ant->sgte = nuevo;
+				nuevo->sgte = personal;
+				nuevo->ant = personal->ant;
+				personal->ant = nuevo;
+				personal=nuevo;	
+			}
 		}else{
-			int x=1;
-			bool encontrado = false;
+			int x=1; bool encontrado=false;
 			while(p->sgte != personal && x!=pos){
 				p = p->sgte;
 				x++;
+				if(x==pos){
+					encontrado = true;
+				}
 			}
-			if(x==pos){
-				p->ant->sgte = nuevo;
-				nuevo->ant = p->ant;
-				p->ant = nuevo;
+			if(encontrado==true){
 				nuevo->sgte = p;
+				nuevo->ant = p->ant;
+				p->ant->sgte = nuevo;
+				p->ant = nuevo;
 			}else{
 				cout<<"La longitud de la lista es menor a la posicion buscada."<<endl;
 			}
@@ -216,6 +264,7 @@ void menuMedico(TpPersonal &personal){
 		switch(opc){
 			case 1:{
 				insertarPersonal(personal);
+				verListaPersonal(personal);
 				break;
 			}
 			case 2:{
