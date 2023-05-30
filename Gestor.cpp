@@ -42,9 +42,18 @@ struct Personal{
 	struct Personal *sgte;
 };
 
+struct Medicamento{
+	string id;
+	int precio;
+	int unidades;
+	string contraindicaciones;
+	struct Medicamento *sgte;
+};
+
 typedef struct Personal *TpPersonal;
 typedef struct Cita *TpCita;
 typedef struct Paciente *TpPaciente;
+typedef struct Medicamento *TpMedicamento;
 
 TpCita crearCita(){
 	system("cls");
@@ -92,6 +101,8 @@ int menuPrincipal(){
 	return opc;
 }
 
+
+//************************************************** PACIENTE ******************************
 TpPaciente registroPaciente(){
 	TpPaciente nuevo = NULL;
 	nuevo = new(struct Paciente);
@@ -139,7 +150,9 @@ void menuPaciente(TpPaciente &paciente){
 		cin>> opc;
 		switch(opc){
 			case 1:{
+				system("CLS");
 				insertarPaciente(paciente);
+				cout<<"\n\n\n\n";
 				verListaPaciente(paciente);
 				break;
 			}
@@ -153,6 +166,8 @@ void menuPaciente(TpPaciente &paciente){
 		}
 	} while(opc!=3);
 }
+
+// **************************** PERSONAL ***************************
 
 TpPersonal registroPersonal(){
 	TpPersonal nuevo = NULL;
@@ -248,11 +263,51 @@ void insertarPersonal(TpPersonal &personal){
 	}
 }
 
+//*********************************************  MEDICAMENTO  ****************************************
 
-void menuMedico(TpPersonal &personal){
+TpMedicamento registroMedicamento(){
+	TpMedicamento nuevo = NULL;
+	nuevo = new(struct Medicamento);
+	cout<<"Ingrese el id:"<<endl;
+	cin>>nuevo->id;
+	cout<<"Ingrese el precio:"<<endl;
+	cin>>nuevo->precio;
+	cout<<"Ingrese las unidades disponibles:"<<endl;
+	cin>>nuevo->unidades;
+	cout<<"Ingrese las contraindicaciones:"<<endl;
+	cin.ignore();
+	getline(cin,nuevo->contraindicaciones);
+	nuevo->sgte = NULL;
+	cout<<"El medicamento ha sido registrado correctamente."<<endl;
+	return nuevo;
+}
+
+void insertarMedicamento(TpMedicamento &medicamento){
+	TpMedicamento nuevo = registroMedicamento(), p=medicamento;
+	if(medicamento==NULL){
+		medicamento = nuevo;
+	}else{
+		while(p->sgte != NULL)
+			p=p->sgte;
+		p->sgte = nuevo;
+	}
+}
+
+void verListaMedicamento(TpMedicamento lista){
+	int i=0; TpMedicamento p = lista;
+	cout<<"ID - PRECIO - UNIDADES \t - CONTRAINDICACIONES"<<endl;
+	while(p != NULL){
+		cout<< " "<<i+1<<") "<<p->id<<" - "<<p->precio<<" - "<<p->unidades<<" -\t "<<p->contraindicaciones<< endl;
+		p=p->sgte;
+		i++;	
+}}
+
+
+void menuMedico(TpPersonal &personal, TpMedicamento &medicamento){
 	int opc;
 	
 	do{
+		system("CLS");
 		cout<< "1. Registrar Personal\n";
 		cout<< "2. Registrar Medicinas\n";
 		cout<< "3. Crear citas\n";
@@ -263,12 +318,17 @@ void menuMedico(TpPersonal &personal){
 		cin>> opc;
 		switch(opc){
 			case 1:{
+				system("CLS");
 				insertarPersonal(personal);
+				cout<<"\n\n\n\n";
 				verListaPersonal(personal);
 				break;
 			}
 			case 2:{
-				
+				system("CLS");
+				insertarMedicamento(medicamento);
+				cout<<"\n\n\n\n";
+				verListaMedicamento(medicamento);
 				break;
 			}
 			case 3:{
@@ -283,18 +343,25 @@ void menuMedico(TpPersonal &personal){
 				
 				break;
 			}
+			case 6:{
+				
+				break;
+			}
 		}
 		system("pause");
-		system("cls");
 	} while(opc!=7);
 }
+
+// ******************************************* MAIN ***********************
 
 int main(){
 	int opc;
 	TpPersonal personal = NULL;
 	TpPaciente paciente = NULL;
 	TpCita cita=NULL;
+	TpMedicamento medicamento = NULL;
 	do{
+		system("CLS");
 		opc=menuPrincipal();
 		switch(opc){
 			case 1:{
@@ -302,7 +369,7 @@ int main(){
 				break;
 			}
 			case 2:{
-				menuMedico(personal);
+				menuMedico(personal, medicamento);
 				break;
 			}
 		}
