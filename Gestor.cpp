@@ -1,4 +1,5 @@
 #include <iostream>
+#include<fstream>
 using namespace std;
 
 struct Fecha{
@@ -282,16 +283,58 @@ TpMedicamento registroMedicamento(){
 	return nuevo;
 }
 
-void insertarMedicamento(TpMedicamento &medicamento){
-	TpMedicamento nuevo = registroMedicamento(), p=medicamento;
+void insertarMedicamento(TpMedicamento &medicamento, TpMedicamento nuevo, bool existe){
+	if(existe==false){
+		nuevo = registroMedicamento();
+	}
+	TpMedicamento p=medicamento;
+	
 	if(medicamento==NULL){
 		medicamento = nuevo;
 	}else{
 		while(p->sgte != NULL)
 			p=p->sgte;
 		p->sgte = nuevo;
+	}	
+}
+
+void insertarTXTMedicamento(TpMedicamento &medicamento, ofstream &MedicamentoTXT){
+	TpMedicamento p = medicamento;
+	if(medicamento!=NULL){
+		while(p->sgte != NULL){
+			p=p->sgte;	
+		}
+	}
+	
+	MedicamentoTXT<<p->id<<endl;
+	MedicamentoTXT<<p->precio<<endl;
+	MedicamentoTXT<<p->unidades<<endl;
+	MedicamentoTXT<<p->contraindicaciones<<endl;
+}
+
+void recuperarTXTMedicamento(TpMedicamento &medicamento){
+	ifstream MedicamentoTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Medicamentos.txt",ios::in);
+	string i, p, u, c;
+	getline(MedicamentoTXT,i);
+	while(!MedicamentoTXT.eof()){
+		getline(MedicamentoTXT,p);
+		getline(MedicamentoTXT,u);
+		getline(MedicamentoTXT,c);
+		TpMedicamento nuevo = NULL;
+		nuevo = new(struct Medicamento);
+		nuevo->id = i;
+		nuevo->precio = stoi(p);
+		nuevo->unidades = stoi(u);
+		nuevo->contraindicaciones = c;
+		nuevo->sgte=NULL;
+		insertarMedicamento(medicamento, nuevo, true);
+		getline(MedicamentoTXT,i);
 	}
 }
+
+
+
+
 
 void verListaMedicamento(TpMedicamento lista){
 	int i=0; TpMedicamento p = lista;
@@ -326,7 +369,11 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento){
 			}
 			case 2:{
 				system("CLS");
-				insertarMedicamento(medicamento);
+				ofstream MedicamentoTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Medicamentos.txt",ios::app);
+				TpMedicamento nuevo = NULL;
+				insertarMedicamento(medicamento, nuevo, false);
+				insertarTXTMedicamento(medicamento, MedicamentoTXT);
+				MedicamentoTXT.close();
 				cout<<"\n\n\n\n";
 				verListaMedicamento(medicamento);
 				break;
@@ -360,6 +407,10 @@ int main(){
 	TpPaciente paciente = NULL;
 	TpCita cita=NULL;
 	TpMedicamento medicamento = NULL;
+	// recuperarTXTPersonal(personal);
+	// recuperarTXTPaciente(paciente);
+	// recuperarTXTCita(cita);
+	recuperarTXTMedicamento(medicamento);
 	do{
 		system("CLS");
 		opc=menuPrincipal();
