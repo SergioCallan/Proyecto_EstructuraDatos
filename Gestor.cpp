@@ -110,9 +110,11 @@ TpPaciente registroPaciente(){
 	cout<<"Ingrese el dni:"<<endl;
 	cin>>nuevo->dni;
 	cout<<"Ingrese los nombres:"<<endl;
-	cin>>nuevo->nombres;
+	cin.ignore();
+	getline(cin,nuevo->nombres);
 	cout<<"Ingrese los apellidos:"<<endl;
-	cin>>nuevo->apellidos;
+	cin.ignore();
+	getline(cin,nuevo->apellidos);
 	cout<<"Ingrese el numero de telefono:"<<endl;
 	cin>>nuevo->celular;
 	nuevo->sgte = NULL;
@@ -120,8 +122,11 @@ TpPaciente registroPaciente(){
 	return nuevo;
 }
 
-void insertarPaciente(TpPaciente &paciente){
-	TpPaciente nuevo = registroPaciente(), p=paciente;
+void insertarPaciente(TpPaciente &paciente, TpPaciente nuevo, bool existe){
+	if(existe==false){
+		nuevo = registroPaciente();
+	}
+	TpPaciente p=paciente;
 	if(paciente==NULL){
 		paciente = nuevo;
 	}else{
@@ -140,6 +145,40 @@ void verListaPaciente(TpPaciente lista){
 		i++;	
 }}
 
+void insertarTXTPaciente(TpPaciente &paciente, ofstream &PacienteTXT){
+	TpPaciente p = paciente;
+	if(paciente!=NULL){
+		while(p->sgte != NULL){
+			p=p->sgte;	
+		}
+	}
+	
+	PacienteTXT<<p->dni<<endl;
+	PacienteTXT<<p->nombres<<endl;
+	PacienteTXT<<p->apellidos<<endl;
+	PacienteTXT<<p->celular<<endl;
+}
+
+void recuperarTXTPaciente(TpPaciente &paciente){
+	ifstream PacienteTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Pacientes.txt",ios::in);
+	string d, n, a, c;
+	getline(PacienteTXT,d);
+	while(!PacienteTXT.eof()){
+		getline(PacienteTXT,n);
+		getline(PacienteTXT,a);
+		getline(PacienteTXT,c);
+		TpPaciente nuevo = NULL;
+		nuevo = new(struct Paciente);
+		nuevo->dni = d;
+		nuevo->nombres = n;
+		nuevo->apellidos = a;
+		nuevo->celular = c;
+		nuevo->sgte=NULL;
+		insertarPaciente(paciente, nuevo, true);
+		getline(PacienteTXT,d);
+	}
+}
+
 
 void menuPaciente(TpPaciente &paciente){
 	int opc;
@@ -152,7 +191,11 @@ void menuPaciente(TpPaciente &paciente){
 		switch(opc){
 			case 1:{
 				system("CLS");
-				insertarPaciente(paciente);
+				TpPaciente nuevo = NULL;
+				ofstream PacienteTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Pacientes.txt",ios::app);
+				insertarPaciente(paciente, nuevo, false);
+				insertarTXTPaciente(paciente, PacienteTXT);
+				PacienteTXT.close();
 				cout<<"\n\n\n\n";
 				verListaPaciente(paciente);
 				break;
@@ -168,6 +211,8 @@ void menuPaciente(TpPaciente &paciente){
 	} while(opc!=3);
 }
 
+
+
 // **************************** PERSONAL ***************************
 
 TpPersonal registroPersonal(){
@@ -176,13 +221,16 @@ TpPersonal registroPersonal(){
 	cout<<"Ingrese el id:"<<endl;
 	cin>>nuevo->id;
 	cout<<"Ingrese los nombres:"<<endl;
-	cin>>nuevo->nombre;
+	cin.ignore();
+	getline(cin,nuevo->nombre);
 	cout<<"Ingrese los apellidos:"<<endl;
-	cin>>nuevo->apellidos;
+	cin.ignore();
+	getline(cin,nuevo->apellidos);
 	cout<<"Ingrese el salario:"<<endl;
 	cin>>nuevo->salario;
 	cout<<"Ingrese la especialidad:"<<endl;
-	cin>>nuevo->especialidad;
+	cin.ignore();
+	getline(cin,nuevo->especialidad);
 	nuevo->ant = NULL;
 	nuevo->sgte = NULL;
 	return nuevo;
@@ -217,50 +265,103 @@ bool existeUnPersonal(TpPersonal personal){
 	return existe;
 }
 
-void insertarPersonal(TpPersonal &personal){
+void insertarPersonal(TpPersonal &personal, TpPersonal nuevo, bool existe){
 	int pos;
-	TpPersonal nuevo = NULL, p=personal;
-	nuevo = registroPersonal();
-	if(personal == NULL){
-		nuevo->ant = nuevo;
-		nuevo->sgte = nuevo;
-		personal = nuevo;
-	}else{
-		cout<<"Ingrese la posicion del horario del medico"<<endl;
-		cin>>pos;
-		if(pos==1){
-			if(existeUnPersonal(personal)){
-				nuevo->sgte = personal;
-				nuevo->ant = personal;
-				personal->sgte = nuevo;
-				personal->ant = nuevo;
-				personal = nuevo;
-			}else{
-				personal->ant->sgte = nuevo;
-				nuevo->sgte = personal;
-				nuevo->ant = personal->ant;
-				personal->ant = nuevo;
-				personal=nuevo;	
-			}
+	TpPersonal p=personal;
+	if(existe==false){
+		nuevo = registroPersonal();
+		if(personal == NULL){
+			nuevo->ant = nuevo;
+			nuevo->sgte = nuevo;
+			personal = nuevo;
 		}else{
-			int x=1; bool encontrado=false;
-			while(p->sgte != personal && x!=pos){
-				p = p->sgte;
-				x++;
-				if(x==pos){
-					encontrado = true;
+			cout<<"Ingrese la posicion del horario del medico"<<endl;
+			cin>>pos;
+			if(pos==1){
+				if(existeUnPersonal(personal)){
+					nuevo->sgte = personal;
+					nuevo->ant = personal;
+					personal->sgte = nuevo;
+					personal->ant = nuevo;
+					personal = nuevo;
+				}else{
+					personal->ant->sgte = nuevo;
+					nuevo->sgte = personal;
+					nuevo->ant = personal->ant;
+					personal->ant = nuevo;
+					personal=nuevo;	
 				}
+			}else{
+				int x=1; bool encontrado=false;
+				while(p->sgte != personal && x!=pos){
+					p = p->sgte;
+					x++;
+					if(x==pos){
+						encontrado = true;
+					}
+				}
+				if(encontrado==true){
+					nuevo->sgte = p;
+					nuevo->ant = p->ant;
+					p->ant->sgte = nuevo;
+					p->ant = nuevo;
+				}else{
+					cout<<"La longitud de la lista es menor a la posicion buscada."<<endl;
+				}
+				
 			}
-			if(encontrado==true){
+	}}else{
+		if(personal == NULL){
+			nuevo->ant = nuevo;
+			nuevo->sgte = nuevo;
+			personal = nuevo;
+		}else{
+			while(p->sgte != personal){
+				p = p->sgte;
+			}
 				nuevo->sgte = p;
 				nuevo->ant = p->ant;
 				p->ant->sgte = nuevo;
 				p->ant = nuevo;
-			}else{
-				cout<<"La longitud de la lista es menor a la posicion buscada."<<endl;
-			}
-			
 		}
+	}
+}
+
+void insertarTXTPersonal(TpPersonal &personal, ofstream &PersonalTXT){ // FALTA EDITAR ACORDE LA POSICIÓN
+	TpPersonal p = personal;
+	if(personal!=NULL){
+		while(p->sgte != personal){
+			p=p->sgte;	
+		}
+	}
+	
+	PersonalTXT<<p->id<<endl;
+	PersonalTXT<<p->nombre<<endl;
+	PersonalTXT<<p->apellidos<<endl;
+	PersonalTXT<<p->salario<<endl;
+	PersonalTXT<<p->especialidad<<endl;
+}
+
+void recuperarTXTPersonal(TpPersonal &personal){
+	ifstream PersonalTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Personal.txt",ios::in);
+	string i, n, a, s, e;
+	getline(PersonalTXT,i);
+	while(!PersonalTXT.eof()){
+		getline(PersonalTXT,n);
+		getline(PersonalTXT,a);
+		getline(PersonalTXT,s);
+		getline(PersonalTXT,e);
+		TpPersonal nuevo = NULL;
+		nuevo = new(struct Personal);
+		nuevo->ant = NULL;
+		nuevo->id = i;
+		nuevo->nombre = n;
+		nuevo->apellidos = a;
+		nuevo->salario = stoi(s);
+		nuevo->especialidad = e;
+		nuevo->sgte=NULL;
+		insertarPersonal(personal, nuevo, true);
+		getline(PersonalTXT,i);
 	}
 }
 
@@ -362,7 +463,11 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento){
 		switch(opc){
 			case 1:{
 				system("CLS");
-				insertarPersonal(personal);
+				TpPersonal nuevo = NULL;
+				ofstream PersonalTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Personal.txt",ios::app);
+				insertarPersonal(personal, nuevo, false);
+				insertarTXTPersonal(personal, PersonalTXT);
+				PersonalTXT.close();
 				cout<<"\n\n\n\n";
 				verListaPersonal(personal);
 				break;
@@ -407,8 +512,8 @@ int main(){
 	TpPaciente paciente = NULL;
 	TpCita cita=NULL;
 	TpMedicamento medicamento = NULL;
-	// recuperarTXTPersonal(personal);
-	// recuperarTXTPaciente(paciente);
+	recuperarTXTPersonal(personal);
+	recuperarTXTPaciente(paciente);
 	// recuperarTXTCita(cita);
 	recuperarTXTMedicamento(medicamento);
 	do{
