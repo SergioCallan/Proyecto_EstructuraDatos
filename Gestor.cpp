@@ -219,7 +219,8 @@ TpPersonal registroPersonal(){
 	TpPersonal nuevo = NULL;
 	nuevo = new(struct Personal);
 	cout<<"Ingrese el id:"<<endl;
-	cin>>nuevo->id;
+	cin.ignore();
+	getline(cin,nuevo->especialidad);
 	cout<<"Ingrese los nombres:"<<endl;
 	cin.ignore();
 	getline(cin,nuevo->nombre);
@@ -319,22 +320,26 @@ void insertarPersonal(TpPersonal &personal, TpPersonal nuevo, bool existe){
 			while(p->sgte != personal){
 				p = p->sgte;
 			}
-				nuevo->sgte = p;
-				nuevo->ant = p->ant;
-				p->ant->sgte = nuevo;
-				p->ant = nuevo;
+				personal->ant->sgte = nuevo;
+				nuevo->ant = personal->ant;
+				nuevo->sgte = personal;
+				personal->ant = nuevo;
 		}
 	}
 }
 
-void insertarTXTPersonal(TpPersonal &personal, ofstream &PersonalTXT){ // FALTA EDITAR ACORDE LA POSICIÓN
+void insertarTXTPersonal(TpPersonal &personal, ofstream &PersonalTXT){ 
 	TpPersonal p = personal;
 	if(personal!=NULL){
 		while(p->sgte != personal){
+			PersonalTXT<<p->id<<endl;
+			PersonalTXT<<p->nombre<<endl;
+			PersonalTXT<<p->apellidos<<endl;
+			PersonalTXT<<p->salario<<endl;
+			PersonalTXT<<p->especialidad<<endl;
 			p=p->sgte;	
 		}
 	}
-	
 	PersonalTXT<<p->id<<endl;
 	PersonalTXT<<p->nombre<<endl;
 	PersonalTXT<<p->apellidos<<endl;
@@ -464,10 +469,12 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento){
 			case 1:{
 				system("CLS");
 				TpPersonal nuevo = NULL;
-				ofstream PersonalTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Personal.txt",ios::app);
+				ofstream PersonalTXT("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\modificacion.txt",ios::app);
 				insertarPersonal(personal, nuevo, false);
 				insertarTXTPersonal(personal, PersonalTXT);
 				PersonalTXT.close();
+				remove("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Personal.txt");
+				rename("D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\modificacion.txt","D:\\CLASES UNMSM\\5 CICLO\\Estructura de datos\\PROYECTO\\Personal.txt");
 				cout<<"\n\n\n\n";
 				verListaPersonal(personal);
 				break;
@@ -484,7 +491,8 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento){
 				break;
 			}
 			case 3:{
-				
+				cout<<"\n\n\n\n";
+				verListaPersonal(personal);
 				break;
 			}
 			case 4:{
