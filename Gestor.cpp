@@ -1,5 +1,6 @@
 #include <iostream>
 #include<fstream>
+#include<sstream>
 using namespace std;
 
 struct Fecha{
@@ -113,7 +114,6 @@ TpPaciente registroPaciente(){
 	cin.ignore();
 	getline(cin,nuevo->nombres);
 	cout<<"Ingrese los apellidos:"<<endl;
-	cin.ignore();
 	getline(cin,nuevo->apellidos);
 	cout<<"Ingrese el numero de telefono:"<<endl;
 	cin>>nuevo->celular;
@@ -219,13 +219,11 @@ TpPersonal registroPersonal(){
 	TpPersonal nuevo = NULL;
 	nuevo = new(struct Personal);
 	cout<<"Ingrese el id:"<<endl;
-	cin.ignore();
-	getline(cin,nuevo->especialidad);
+	cin>>nuevo->id;
 	cout<<"Ingrese los nombres:"<<endl;
 	cin.ignore();
 	getline(cin,nuevo->nombre);
 	cout<<"Ingrese los apellidos:"<<endl;
-	cin.ignore();
 	getline(cin,nuevo->apellidos);
 	cout<<"Ingrese el salario:"<<endl;
 	cin>>nuevo->salario;
@@ -362,7 +360,7 @@ void recuperarTXTPersonal(TpPersonal &personal){
 		nuevo->id = i;
 		nuevo->nombre = n;
 		nuevo->apellidos = a;
-		nuevo->salario = stoi(s);
+		istringstream(s)>>nuevo->salario;
 		nuevo->especialidad = e;
 		nuevo->sgte=NULL;
 		insertarPersonal(personal, nuevo, true);
@@ -429,8 +427,8 @@ void recuperarTXTMedicamento(TpMedicamento &medicamento){
 		TpMedicamento nuevo = NULL;
 		nuevo = new(struct Medicamento);
 		nuevo->id = i;
-		nuevo->precio = stoi(p);
-		nuevo->unidades = stoi(u);
+		istringstream(p)>>nuevo->precio;
+		istringstream(u)>>nuevo->unidades;
 		nuevo->contraindicaciones = c;
 		nuevo->sgte=NULL;
 		insertarMedicamento(medicamento, nuevo, true);
