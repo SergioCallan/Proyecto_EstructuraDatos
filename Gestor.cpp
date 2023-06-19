@@ -124,7 +124,7 @@ void insertarTXTPaciente(TpPaciente &paciente, ofstream &PacienteTXT){
 }
 
 void recuperarTXTPaciente(TpPaciente &paciente){
-	ifstream PacienteTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Pacientes.txt",ios::in);
+	ifstream PacienteTXT("\Pacientes.txt",ios::in);
 	string d, n, a, c;
 	getline(PacienteTXT,d);
 	while(!PacienteTXT.eof()){
@@ -156,7 +156,7 @@ void menuPaciente(TpPaciente &paciente){
 			case 1:{
 				system("CLS");
 				TpPaciente nuevo = NULL;
-				ofstream PacienteTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Pacientes.txt",ios::app);
+				ofstream PacienteTXT("\Pacientes.txt",ios::app);
 				insertarPaciente(paciente, nuevo, false);
 				insertarTXTPaciente(paciente, PacienteTXT);
 				PacienteTXT.close();
@@ -318,7 +318,7 @@ void insertarTXTPersonal(TpPersonal &personal, ofstream &PersonalTXT){
 }
 
 void recuperarTXTPersonal(TpPersonal &personal){
-	ifstream PersonalTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Personal.txt",ios::in);
+	ifstream PersonalTXT("\Personal.txt",ios::in);
 	string i, n, a, s, e;
 	getline(PersonalTXT,i);
 	while(!PersonalTXT.eof()){
@@ -372,16 +372,6 @@ TpCita crearCita(){
 }
 
 void agendarCita(TpCita &citas, TpCita nuevo, bool existe){
-	/*TpCita nuevo= NULL, p=citas;
-	nuevo= crearCita(lista, cont);
-	if(citas==NULL)
-		citas==nuevo;
-	else{
-		while(p->sgte!=NULL)
-			p=p->sgte;
-		p->sgte= nuevo;
-	}
-	*/
 	if(existe==false){
 		nuevo = crearCita();
 	}
@@ -421,7 +411,7 @@ void cancelarCita(){
 }
 
 void recuperarTXTCitas(TpCita &citas){
-	ifstream CitasTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Citas.txt",ios::in);
+	ifstream CitasTXT("\Citas.txt",ios::in);
 	string idMedico, dniPaciente, dia, mes, anio, hora, min;
 	getline(CitasTXT,idMedico);
 	while(!CitasTXT.eof()){
@@ -495,7 +485,7 @@ void insertarTXTMedicamento(TpMedicamento &medicamento, ofstream &MedicamentoTXT
 }
 
 void recuperarTXTMedicamento(TpMedicamento &medicamento){
-	ifstream MedicamentoTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Medicamentos.txt",ios::in);
+	ifstream MedicamentoTXT("\Medicamentos.txt",ios::in);
 	string i, p, u, c;
 	getline(MedicamentoTXT,i);
 	while(!MedicamentoTXT.eof()){
@@ -542,19 +532,19 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 			case 1:{
 				system("CLS");
 				TpPersonal nuevo = NULL;
-				ofstream PersonalTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\modificacion.txt",ios::app);
+				ofstream PersonalTXT("\modificacion.txt",ios::app);
 				insertarPersonal(personal, nuevo, false);
 				insertarTXTPersonal(personal, PersonalTXT);
 				PersonalTXT.close();
-				remove("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Personal.txt");
-				rename("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\modificacion.txt","C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Personal.txt");
+				remove("\Personal.txt");
+				rename("\modificacion.txt","\Personal.txt");
 				cout<<"\n\n\n\n";
 				verListaPersonal(personal);
 				break;
 			}
 			case 2:{
 				system("CLS");
-				ofstream MedicamentoTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Medicamentos.txt",ios::app);
+				ofstream MedicamentoTXT("\Medicamentos.txt",ios::app);
 				TpMedicamento nuevo = NULL;
 				insertarMedicamento(medicamento, nuevo, false);
 				insertarTXTMedicamento(medicamento, MedicamentoTXT);
@@ -565,7 +555,7 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 			}
 			case 3:{
 				system("CLS");
-				ofstream CitasTXT("C:\\Users\\Sergio\\Desktop\\Estructura\\Proyecto_EstructuraDatos\\Citas.txt",ios::app);
+				ofstream CitasTXT("\Citas.txt",ios::app);
 				TpCita nuevo = NULL;
 				agendarCita(citas, nuevo, false);
 				agendarTXTCita(citas, CitasTXT);
