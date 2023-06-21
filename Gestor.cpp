@@ -3,17 +3,6 @@
 #include<sstream>
 using namespace std;
 
-struct Fecha{
-	int dd;
-	int mm;
-	int yyyy;
-};
-
-struct Hora{
-	int seg;
-	int min;
-};
-
 struct Paciente{
 	string dni;
 	string nombres;
@@ -402,8 +391,18 @@ void agendarTXTCita(TpCita &citas, ofstream &CitasTXT){
 	CitasTXT<<p->min<<endl;
 }
 
-void editarCita(){
-	
+void copiarTXTCita(TpCita &citas, ofstream &CitasTXT){
+	TpCita p = citas;
+	while(p!=NULL){
+		CitasTXT<<p->idMedico<<endl;
+		CitasTXT<<p->dniPaciente<<endl;
+		CitasTXT<<p->dia<<endl;
+		CitasTXT<<p->mes<<endl;
+		CitasTXT<<p->anio<<endl;
+		CitasTXT<<p->hora<<endl;
+		CitasTXT<<p->min<<endl;
+		p=p->sgte;
+	}
 }
 
 void cancelarCita(){
@@ -433,6 +432,24 @@ void recuperarTXTCitas(TpCita &citas){
 		nuevo->sgte=NULL;
 		agendarCita(citas, nuevo, true);
 		getline(CitasTXT,idMedico);
+	}
+}
+
+void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, int mes, int anio){
+	TpCita p= citas;
+	int diaN, mesN, anioN;
+	while(p!=NULL){
+		if(p->idMedico==idBusqueda &&  p->dniPaciente==dniBusqueda && p->dia==dia &&p->mes==mes &&p->anio==anio){
+			cout<< "Ingrese la nueva fecha de la cita (dd/mm/yyyy): ";
+			cin>> diaN;
+			cin>> mesN;
+			cin>> anioN;
+			p->dia= diaN;
+			p->mes= mesN;
+			p->anio= anioN;
+			return;
+		}
+		p=p->sgte;
 	}
 }
 
@@ -564,7 +581,27 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 				break;
 			}
 			case 4:{
-				editarCita();
+				string idBusqueda;
+				string dniBusqueda;
+				int dia;
+				int mes;
+				int anio;
+				cout<< "Ingrese el id del medico encargado de la consulta: ";
+				cin>> idBusqueda;
+				cout<< "Ingrese el DNI del paciente: ";
+				cin>> dniBusqueda;
+				cout<< "Ingrese el dia de la cita: ";
+				cin>> dia;
+				cin>> mes;
+				cin>> anio;
+				buscarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio);
+				ofstream CitasTXT("\CitasMod.txt",ios::app);
+				copiarTXTCita(citas, CitasTXT);
+				TpCita t= citas;
+				int i=1;
+				CitasTXT.close();
+				remove("\Citas.txt");
+				rename("\CitasMod.txt","\Citas.txt");
 				break;
 			}
 			case 5:{
