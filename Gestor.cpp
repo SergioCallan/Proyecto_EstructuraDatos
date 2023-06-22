@@ -132,7 +132,6 @@ void recuperarTXTPaciente(TpPaciente &paciente){
 	}
 }
 
-
 void menuPaciente(TpPaciente &paciente){
 	int opc;
 	
@@ -164,8 +163,6 @@ void menuPaciente(TpPaciente &paciente){
 	} while(opc!=3);
 }
 
-
-
 // **************************** PERSONAL ***************************
 
 TpPersonal registroPersonal(){
@@ -187,8 +184,6 @@ TpPersonal registroPersonal(){
 	nuevo->sgte = NULL;
 	return nuevo;
 }
-
-
 
 void verListaPersonal(TpPersonal lista){
 	int i=0;
@@ -329,8 +324,6 @@ void recuperarTXTPersonal(TpPersonal &personal){
 	}
 }
 
-
-
 //*********************************************  CITAS  ****************************************
 
 TpCita crearCita(){
@@ -342,13 +335,21 @@ TpCita crearCita(){
 	cin >> dniPaciente;
 	cout<< "Ingrese el ID del personal a cargo de la cita: ";
 	cin >> idMedico;
-	cout<< "Ingrese la fecha de la cita (dd/mm/yyyy): ";
-	cin >> dia;
-	cin >> mes;
-	cin >> anio;
-	cout<< "Insertar la hora destinada a la cita (hh-mm)";
-	cin >> hora;
-	cin >> min;
+	do{
+		cout<< "Ingrese la fecha de la cita (dd/mm/yyyy): ";
+		cin >> dia;
+		cin >> mes;
+		cin >> anio;
+		if(dia>31 ||dia<1 ||mes<1 ||mes>12 ||anio<2023)
+			cout<<"Fecha invalida, ingrese los datos otra vez.\n";
+	} while(dia>31 ||dia<1 ||mes<1 ||mes>12 ||anio<2023);
+	do{
+		cout<< "Insertar la hora destinada a la cita en formato 24hrs. (hh-mm): ";
+		cin >> hora;
+		cin >> min;
+		if(hora<1|| hora>24 || min<0 ||min>59)
+			cout<<"Hora invalida, ingrese los datos otra vez.\n";
+	} while(hora<1|| hora>24 || min<0 ||min>59);
 	nuevo->idMedico= idMedico;
 	nuevo->dniPaciente= dniPaciente;
 	nuevo->dia= dia;
@@ -406,8 +407,6 @@ void copiarTXTCita(TpCita &citas, ofstream &CitasTXT){
 	}
 }
 
-
-
 void recuperarTXTCitas(TpCita &citas){
 	ifstream CitasTXT("\Citas.txt",ios::in);
 	string idMedico, dniPaciente, dia, mes, anio, hora, min;
@@ -434,6 +433,16 @@ void recuperarTXTCitas(TpCita &citas){
 	}
 }
 
+void mostrarCitas(TpCita citas){
+	while(citas!=NULL){
+		cout<< "\nID del medico encargado: "<<citas->idMedico;
+		cout<< "\nDNI del paciente: "<< citas->dniPaciente;
+		cout<< "\nFecha de la cita: "<<citas->dia<<"/"<<citas->mes<<"/"<<citas->anio;
+		cout<< "\nHora de la cita: "<<citas->hora<<":"<<citas->min;
+		cout<< "\n\n------------------------------------------------------\n";
+		citas=citas->sgte;
+	}
+}
 
 void eliminarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, int mes, int anio){
 	TpCita p= citas, t=NULL;
@@ -464,13 +473,22 @@ void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, i
 	int diaN, mesN, anioN, minN, horaN;
 	while(p!=NULL){
 		if(p->idMedico==idBusqueda &&  p->dniPaciente==dniBusqueda && p->dia==dia &&p->mes==mes &&p->anio==anio){
-			cout<< "Ingrese la nueva fecha de la cita (dd/mm/yyyy): ";
-			cin>> diaN;
-			cin>> mesN;
-			cin>> anioN;
-			cout<< "Ingrese la nueva hora de la cita (hh/mm): ";
-			cin>> horaN;
-			cin>> minN;
+			do{
+				cout<< "Ingrese la nueva fecha de la cita (dd/mm/yyyy): ";
+				cin>> diaN;
+				cin>> mesN;
+				cin>> anioN;
+				if(diaN>31 ||diaN<1 ||mesN<1 ||mesN>12 ||anioN<2023)
+					cout<<"Fecha invalida, ingrese los datos otra vez.\n";
+			} while(diaN>31 ||diaN<1 ||mesN<1 ||mesN>12 ||anioN<2023);
+			
+			do{
+				cout<< "Insertar la nueva hora de la cita en formato 24hrs. (hh-mm): ";
+				cin >> horaN;
+				cin >> minN;
+				if(horaN<1|| horaN>24 || minN<0 ||minN>59)
+					cout<<"Hora invalida, ingrese los datos otra vez.\n";
+			} while(horaN<1|| horaN>24 || minN<0 ||minN>59);
 			p->dia= diaN;
 			p->mes= mesN;
 			p->anio= anioN;
@@ -480,6 +498,8 @@ void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, i
 		}
 		p=p->sgte;
 	}
+	cout << "La cita ingresada no existe." <<endl;
+    return;
 }
 
 //*********************************************  MEDICAMENTO  ****************************************
@@ -560,7 +580,6 @@ void verListaMedicamento(TpMedicamento lista){
 	}
 }
 
-
 void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas){
 	int opc;
 	
@@ -569,10 +588,11 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 		cout<< "1. Registrar Personal\n";
 		cout<< "2. Registrar Medicinas\n";
 		cout<< "3. Crear citas\n";
-		cout<< "4. Editar citas\n";
-		cout<< "5. Eliminar cita\n";
-		cout<< "6. Generar prescripcion\n";
-		cout<< "7. Regresar\n";
+		cout<< "4. Mostrar citas totales\n";
+		cout<< "5. Editar citas\n";
+		cout<< "6. Eliminar cita\n";
+		cout<< "7. Generar prescripcion\n";
+		cout<< "8. Regresar\n";
 		cin>> opc;
 		switch(opc){
 			case 1:{
@@ -610,25 +630,7 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 				break;
 			}
 			case 4:{
-				string idBusqueda;
-				string dniBusqueda;
-				int dia;
-				int mes;
-				int anio;
-				cout<< "Ingrese el id del medico encargado de la consulta: ";
-				cin>> idBusqueda;
-				cout<< "Ingrese el DNI del paciente: ";
-				cin>> dniBusqueda;
-				cout<< "Ingrese el dia de la cita: ";
-				cin>> dia;
-				cin>> mes;
-				cin>> anio;
-				buscarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio);
-				ofstream CitasTXT("\CitasMod.txt",ios::app);
-				copiarTXTCita(citas, CitasTXT);
-				CitasTXT.close();
-				remove("\Citas.txt");
-				rename("\CitasMod.txt","\Citas.txt");
+				mostrarCitas(citas);
 				break;
 			}
 			case 5:{
@@ -637,6 +639,34 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 				int dia;
 				int mes;
 				int anio;
+				mostrarCitas(citas);
+				cout<< "Ingrese el id del medico encargado de la consulta: ";
+				cin>> idBusqueda;
+				cout<< "Ingrese el DNI del paciente: ";
+				cin>> dniBusqueda;
+				do{
+					cout<< "Ingrese el dia de la cita: ";
+					cin>> dia;
+					cin>> mes;
+					cin>> anio;	
+					if(dia<1||dia>31||mes<1||mes>12||anio<2023)
+						cout<< "Fecha invalida, ingrese una correcta.";
+				} while(dia<1||dia>31||mes<1||mes>12||anio<2023);
+				buscarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio);
+				ofstream CitasTXT("\CitasMod.txt",ios::app);
+				copiarTXTCita(citas, CitasTXT);
+				CitasTXT.close();
+				remove("\Citas.txt");
+				rename("\CitasMod.txt","\Citas.txt");
+				break;
+			}
+			case 6:{
+				string idBusqueda;
+				string dniBusqueda;
+				int dia;
+				int mes;
+				int anio;
+				mostrarCitas(citas);
 				cout<< "Ingrese el id del medico encargado de la consulta: ";
 				cin>> idBusqueda;
 				cout<< "Ingrese el DNI del paciente: ";
@@ -648,19 +678,18 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 				eliminarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio);
 				ofstream CitasTXT("\CitasMod.txt",ios::app);
 				copiarTXTCita(citas, CitasTXT);
-				cout<< "Aqui3";
 				CitasTXT.close();
 				remove("\Citas.txt");
 				rename("\CitasMod.txt","\Citas.txt");
 				break;
 			}
-			case 6:{
+			case 7:{
 				
 				break;
 			}
 		}
 		system("pause");
-	} while(opc!=7);
+	} while(opc!=8);
 }
 
 // ******************************************* MAIN ***********************
