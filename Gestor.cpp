@@ -132,13 +132,33 @@ void recuperarTXTPaciente(TpPaciente &paciente){
 	}
 }
 
-void menuPaciente(TpPaciente &paciente){
+void citasPaciente(TpCita citas, string dni){
+	bool encontrado=false;
+	while(citas!=NULL){
+		if(dni==citas->dniPaciente){
+			cout<< "\nID del medico encargado: "<<citas->idMedico;
+			cout<< "\nDNI del paciente: "<< citas->dniPaciente;
+			cout<< "\nFecha de la cita: "<<citas->dia<<"/"<<citas->mes<<"/"<<citas->anio;
+			cout<< "\nHora de la cita: "<<citas->hora<<":"<<citas->min;
+			cout<< "\n\n------------------------------------------------------\n";
+			encontrado=true;
+		}	
+		citas=citas->sgte;
+	}
+	if(!encontrado)
+		cout<< "No se encontro un paciente con ese DNI.\n";
+	system("PAUSE");
+}
+
+void menuPaciente(TpPaciente &paciente, TpCita citas){
 	int opc;
 	
 	do{
+		system("cls");
 		cout<< "\n\t1. Registrar Paciente\n";
 		cout<< "\t2. Buscar, modificar o borrar historial medico\n";
-		cout<< "\t3. Regresar\n";
+		cout<< "\t3. Mostrar citas de un paciente en especifico\n";
+		cout<< "\t4. Regresar\n";
 		cin>> opc;
 		switch(opc){
 			case 1:{
@@ -157,10 +177,14 @@ void menuPaciente(TpPaciente &paciente){
 				break;
 			}
 			case 3:{
+				string dni;
+				cout<< "Insertar el DNI del paciente: ";
+				cin>> dni;
+				citasPaciente(citas, dni);
 				break;
 			}
 		}
-	} while(opc!=3);
+	} while(opc!=4);
 }
 
 // **************************** PERSONAL ***************************
@@ -709,7 +733,7 @@ int main(){
 		opc=menuPrincipal();
 		switch(opc){
 			case 1:{
-				menuPaciente(paciente);
+				menuPaciente(paciente, citas);
 				break;
 			}
 			case 2:{
