@@ -280,6 +280,28 @@ void mostrar(TpHistorial historial, string dni){
 	
 }
 
+void generarPrescripcion(string diagnostico, string medicamentos, string dni, string nombre, string enfermedad) {
+    ofstream archivoPrescripcion("Prescripcion.txt", ios::app);  // Abre el archivo en modo de apendizado
+
+    if (archivoPrescripcion.is_open()) {
+        // Agrega una línea de espacio entre prescripciones
+        archivoPrescripcion << endl;
+
+        // Escribe los datos del paciente y la prescripción en el archivo
+        archivoPrescripcion << "DNI del paciente: " << dni << endl;
+        archivoPrescripcion << "Nombre del paciente: " << nombre << endl;
+        archivoPrescripcion << "Enfermedad: " << enfermedad << endl;
+        archivoPrescripcion << "Diagnóstico: " << diagnostico << endl;
+        archivoPrescripcion << "Prescripción médica: " << medicamentos << endl;
+
+        // Cierra el archivo
+        archivoPrescripcion.close();
+        cout << "Prescripcion generada e impresa correctamente." << endl;
+    } else {
+        cout << "No se pudo abrir el archivo de prescripción." << endl;
+    }
+}
+
 void menuHistorial(TpHistorial &historial){
 	
 	int op;
@@ -668,6 +690,7 @@ int buscarOcupado(TpCita citas, string idMedico, int dia, int mes, int anio, int
 	}
 	return result;
 }
+
 TpCita crearCita(TpCita citas, TpPersonal &personal, TpPaciente &paciente){
 	string dniPaciente, idMedico;
 	int dia, mes, anio, hora, min, aux;
@@ -958,7 +981,7 @@ void verListaMedicamento(TpMedicamento lista){
 	}
 }
 
-void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medicamento, TpCita &citas){
+void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medicamento, TpCita &citas, TpHistorial &historial){
 	int opc;
 	
 	do{
@@ -1071,7 +1094,38 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				break;
 			}
 			case 7:{
-				
+				string dni;
+                cout << "Ingrese el DNI del paciente: ";
+                cin >> dni;
+
+                TpHistorial p = historial;
+                bool encontrado = false;
+
+                while (p != NULL) {
+                    if (dni == p->DNI) {
+                        cout << "\nPrescripcion del paciente\n";
+                        cout << "DNI del paciente: " << p->DNI << endl;
+                        cout << "Nombre del paciente: " << p->NombreCompleto << endl;
+                        cout << "Enfermedad: " << p->Enfermedad << endl;
+                        cout << "Alergias: " << p->Alergias << endl;
+                        cout << "Diagnostico general: " << p->DiagnosticoGeneral << endl;
+
+                        // Generar y guardar la prescripción en un archivo
+                        string prescripcion;
+                        cout << "Ingrese la prescripcion medica: ";
+                        cin.ignore();
+                        getline(cin, prescripcion);
+                        generarPrescripcion(p->DiagnosticoGeneral, prescripcion, p->DNI, p->NombreCompleto, p->Enfermedad);
+
+                        encontrado = true;
+                        break;
+                    }
+                    p = p->sgte;
+                }
+
+                if (!encontrado) {
+                    cout << "No se encontro un paciente con ese DNI.\n";
+                }
 				break;
 			}
 		}
@@ -1104,7 +1158,7 @@ int main(){
 				break;
 			}
 			case 2:{
-				menuMedico(personal, paciente, medicamento, citas);
+				menuMedico(personal, paciente, medicamento, citas, historial);
 				break;
 			}
 		}

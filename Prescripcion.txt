@@ -1,0 +1,16 @@
+DNI del paciente: 76147123
+Nombre del paciente: Yanira Arantxa Cueva Mere
+Enfermedad: Sin Especificar
+Diagnóstico: Sin Especificar
+Prescripción médica: xdddddd
+DNI del paciente: 78871231
+Nombre del paciente: Juan Carlos Rodriguez Avila
+Enfermedad: Sin Especificar
+Diagnóstico: Sin Especificar
+Prescripción médica: necesita mas pastillas
+
+DNI del paciente: 75523142
+Nombre del paciente: Illary Marcelo Leon Robles
+Enfermedad: Sin Especificar
+Diagnóstico: Sin Especificar
+Prescripción médica: mas pastillas
