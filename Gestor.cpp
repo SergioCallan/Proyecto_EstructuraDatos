@@ -40,10 +40,53 @@ struct Medicamento{
 	struct Medicamento *sgte;
 };
 
+struct Historial{
+	
+	string DNI;
+	string NombreCompleto;
+	string Enfermedad;
+	string Alergias;
+	string DiagnosticoGeneral;
+	struct Historial *sgte;
+	
+};
+
+struct ConsultasHistorial{
+	
+	string DNIpaciente;
+	int dia;
+	int mes;
+	int anio;
+	string Motivo;
+	string Antecedente;
+	string Desarrollo;	
+	
+	struct ConsultasHistorial *sgte;
+	
+};
+
+struct PruebasHistorial{
+	
+	string DNIPaciente;
+	int dia;
+	int mes;
+	int anio;
+	string TipoDePrueba;
+	string Resultado;	
+	
+	struct PruebasHistorial *sgte;
+	
+};
+
 typedef struct Personal *TpPersonal;
 typedef struct Cita *TpCita;
 typedef struct Paciente *TpPaciente;
 typedef struct Medicamento *TpMedicamento;
+
+//Historial
+typedef struct Historial *TpHistorial;
+typedef struct ConsultasHistorial *TpConsultas;
+typedef struct PruebasHistorial *TpPruebas;
 
 int menuPrincipal(){
 	int opc;
@@ -56,6 +99,234 @@ int menuPrincipal(){
 	return opc;
 }
 
+//************************************************** HISTORIAL ******************************
+TpHistorial crearHistorial(string DNI, string nombreCom){
+	
+	int op;
+	
+	TpHistorial nuevo = NULL;
+	nuevo = new (struct Historial);
+
+	nuevo->DNI=DNI;
+	nuevo->NombreCompleto = nombreCom;
+	nuevo->Enfermedad = "Sin Especificar";
+	nuevo->Alergias = "Sin Especificar";
+	nuevo->DiagnosticoGeneral = "Sin Especificar";
+	
+	/*
+	cout<<"El paciente posee alguna enfermedad? (1: Si, 0: No): ";
+	
+	do{
+		
+		cin>>op;
+		
+	}while(op<0 || op>1);
+	
+	cout<<"\n";
+	
+	if(op == true){
+		
+		cin.ignore();
+		cout<<"Enfermedad: ";
+		getline(cin,enfermedad);
+	
+	}
+	
+	else{
+		
+		enfermedad = "Sin enfermedad";
+		
+	}
+	
+	cout<<"El paciente posee alguna alergia? (1: Si, 0: No): ";
+	
+	do{
+		
+		cin>>op;
+		
+	}while(op<0 || op>1);
+	
+	cout<<"\n";
+	
+	if(op == true){
+		
+		cin.ignore();
+		cout<<"Alergias: ";
+		getline(cin,alergias);
+	
+	}
+	
+	else{
+		
+		enfermedad = "Sin alergias";
+		
+	}
+		
+	cout<<"Diagnostico General: ";
+	getline(cin,diagnostico);
+	*/
+	
+	nuevo->sgte= NULL;
+	return nuevo;
+	
+}
+
+void encolarHistorial(TpHistorial &historial, TpHistorial nuevo){
+	
+	TpHistorial p = historial;
+	
+	if(historial==NULL) historial = nuevo;
+
+	else{
+		
+		while(p->sgte != NULL) p=p->sgte;
+		
+		p->sgte = nuevo;
+		
+	}
+	
+}
+
+
+void insertarHistorial(TpHistorial &historial, TpPaciente paciente, bool existe){
+	
+	TpHistorial nuevo = NULL;
+	
+	if(existe == false){
+		
+		
+		
+		nuevo = crearHistorial(paciente->dni,paciente->nombres + " " + paciente->apellidos);
+		
+	}
+
+	encolarHistorial (historial, nuevo);
+	
+}
+
+void insertarTXTHistorial(TpHistorial &historial, ofstream &HistorialTXT){
+	
+	TpHistorial p = historial;
+	
+	if(historial!=NULL){
+		while(p->sgte != NULL){
+			p=p->sgte;	
+		}
+	}
+	
+	HistorialTXT<<p->DNI<<endl;
+	HistorialTXT<<p->NombreCompleto<<endl;
+	HistorialTXT<<p->Enfermedad<<endl;
+	HistorialTXT<<p->Alergias<<endl;
+	HistorialTXT<<p->DiagnosticoGeneral<<endl;
+	
+}
+
+void recuperarTXTHistorial(TpHistorial &hist){
+	
+	ifstream HistorialTXT("Historial.txt",ios::in);
+	
+	string DNI, nombre, enfermedad, alergias, diagnostico;
+	
+	getline(HistorialTXT,DNI);
+	
+	while(!HistorialTXT.eof()){
+		
+		getline(HistorialTXT,nombre);
+		getline(HistorialTXT,enfermedad);
+		getline(HistorialTXT,alergias);
+		getline(HistorialTXT,diagnostico);
+		
+		TpHistorial nuevo = NULL;
+		nuevo = new(struct Historial);
+		
+		nuevo->DNI = DNI;
+		nuevo->NombreCompleto = nombre;
+		nuevo->Enfermedad = enfermedad;
+		nuevo->Alergias = alergias;
+		nuevo->DiagnosticoGeneral = diagnostico;
+		
+		nuevo->sgte=NULL;
+		
+		encolarHistorial(hist, nuevo);
+		getline(HistorialTXT,DNI);
+			
+	}
+	
+}
+
+void mostrar(TpHistorial historial, string dni){
+	
+	bool encontrado = false;
+	
+	while(historial!=NULL){
+		
+		if(dni==historial->DNI){
+			
+			cout<< "\nDNI del paciente: "<<dni;
+			cout<< "\nNombre del paciente: "<< historial->NombreCompleto;
+			cout<< "\nEnfermedad: "<<historial->Enfermedad;
+			cout<< "\nAlergias: "<<historial->Alergias;
+			cout<< "\nDiagnostico: "<<historial->DiagnosticoGeneral;
+			cout<< "\n\n------------------------------------------------------\n";
+			encontrado = true;
+		}	
+		historial=historial->sgte;
+	}
+	
+	if(!encontrado) cout<< "No se encontro un paciente con ese DNI.\n";
+		
+	system("PAUSE");
+	
+}
+
+void menuHistorial(TpHistorial &historial){
+	
+	int op;
+	string dni;
+				
+	do{
+		
+		system("cls");
+		
+		cout<<"\t== Historiales Medicos ==\n\n";
+	
+		cout<<"(1): Ver historial medico de un paciente\n";
+		cout<<"(2): Modificar historial medico de un paciente\n";
+		cout<<"(3): Regresar\n\n";
+		
+		cout<<"Opcion: ";	
+		
+		do{
+						
+			cin>>op;
+						
+		}while(op<1 || op>3);
+		
+		switch(op){
+			
+			case 1:{
+				
+				cout<<"Ingrese el DNI del paciente: ";
+				cin>>dni;
+				
+				mostrar(historial,dni);
+				
+				break;
+			}
+			
+			case 2:{
+				
+				
+				
+				break;
+			}
+			
+		}
+		
+	}while(op != 3);
+	
+}
 
 //************************************************** PACIENTE ******************************
 TpPaciente registroPaciente(){
@@ -75,7 +346,7 @@ TpPaciente registroPaciente(){
 	return nuevo;
 }
 
-void insertarPaciente(TpPaciente &paciente, TpPaciente nuevo, bool existe){
+void insertarPaciente(TpPaciente &paciente, TpPaciente &nuevo, bool existe){
 	if(existe==false){
 		nuevo = registroPaciente();
 	}
@@ -113,7 +384,7 @@ void insertarTXTPaciente(TpPaciente &paciente, ofstream &PacienteTXT){
 }
 
 void recuperarTXTPaciente(TpPaciente &paciente){
-	ifstream PacienteTXT("\Pacientes.txt",ios::in);
+	ifstream PacienteTXT("Pacientes.txt",ios::in);
 	string d, n, a, c;
 	getline(PacienteTXT,d);
 	while(!PacienteTXT.eof()){
@@ -146,17 +417,17 @@ void citasPaciente(TpCita citas, string dni){
 		citas=citas->sgte;
 	}
 	if(!encontrado)
-		cout<< "No se encontro un paciente con ese DNI.\n";
+		cout<< "No se encontraron citas para ese paciente.\n";
 	system("PAUSE");
 }
 
-void menuPaciente(TpPaciente &paciente, TpCita citas){
+void menuPaciente(TpPaciente &paciente, TpHistorial &historial, TpCita citas){
 	int opc;
 	
 	do{
 		system("cls");
 		cout<< "\n\t1. Registrar Paciente\n";
-		cout<< "\t2. Buscar, modificar o borrar historial medico\n";
+		cout<< "\t2. Ver y modificar historial medico\n";
 		cout<< "\t3. Mostrar citas de un paciente en especifico\n";
 		cout<< "\t4. Regresar\n";
 		cin>> opc;
@@ -164,16 +435,22 @@ void menuPaciente(TpPaciente &paciente, TpCita citas){
 			case 1:{
 				system("CLS");
 				TpPaciente nuevo = NULL;
-				ofstream PacienteTXT("\Pacientes.txt",ios::app);
+				ofstream PacienteTXT("Pacientes.txt",ios::app);
 				insertarPaciente(paciente, nuevo, false);
 				insertarTXTPaciente(paciente, PacienteTXT);
 				PacienteTXT.close();
+				
+				ofstream HistorialTXT("Historial.txt",ios::app);
+				insertarHistorial(historial,nuevo,false);
+				insertarTXTHistorial(historial,HistorialTXT);
+				HistorialTXT.close();	
+					
 				cout<<"\n\n\n\n";
 				verListaPaciente(paciente);
 				break;
 			}
 			case 2:{
-				
+				menuHistorial(historial);
 				break;
 			}
 			case 3:{
@@ -184,6 +461,11 @@ void menuPaciente(TpPaciente &paciente, TpCita citas){
 				break;
 			}
 		}
+		
+		cout<<"\n";
+		
+		system("pause");
+		
 	} while(opc!=4);
 }
 
@@ -326,7 +608,7 @@ void insertarTXTPersonal(TpPersonal &personal, ofstream &PersonalTXT){
 }
 
 void recuperarTXTPersonal(TpPersonal &personal){
-	ifstream PersonalTXT("\Personal.txt",ios::in);
+	ifstream PersonalTXT("Personal.txt",ios::in);
 	string i, n, a, s, e;
 	getline(PersonalTXT,i);
 	while(!PersonalTXT.eof()){
@@ -350,30 +632,85 @@ void recuperarTXTPersonal(TpPersonal &personal){
 
 //*********************************************  CITAS  ****************************************
 
-TpCita crearCita(){
+bool buscarID(TpPersonal personal, string idMedico){
+	do{
+		if(personal->id==idMedico)
+			return true;
+		personal=personal->sgte;
+	}while(personal->sgte!=personal);
+	return false;
+}
+
+bool buscarDNI(TpPaciente paciente, string dniPaciente){
+	while(paciente!=NULL){
+		if(paciente->dni==dniPaciente)
+			return true;
+		paciente=paciente->sgte;
+	}
+	return false;
+}
+
+int buscarOcupado(TpCita citas, string idMedico, int dia, int mes, int anio, int hora, int min){
+	int minutos=0, dif=0, result=0;
+	while(citas!=NULL){
+		if(citas->idMedico==idMedico){
+			if(citas->dia==dia&& citas->mes==mes&& citas->anio==anio){
+				hora*=60;
+				min+=hora;
+				minutos=minutos+citas->hora*60;
+				minutos+=citas->min;
+				dif= min-minutos;
+				if(dif<30 && dif>-30)
+					result++;
+			}
+		}
+		citas=citas->sgte;
+	}
+	return result;
+}
+TpCita crearCita(TpCita citas, TpPersonal &personal, TpPaciente &paciente){
 	string dniPaciente, idMedico;
-	int dia, mes, anio, hora, min;
+	int dia, mes, anio, hora, min, aux;
+	bool idEncontrado= false, dniEncontrado=false, desocupado= true;
 	TpCita nuevo=NULL;
 	nuevo= new struct Cita;
-	cout<< "Ingrese el DNI del paciente: ";
-	cin >> dniPaciente;
-	cout<< "Ingrese el ID del personal a cargo de la cita: ";
-	cin >> idMedico;
 	do{
-		cout<< "Ingrese la fecha de la cita (dd/mm/yyyy): ";
-		cin >> dia;
-		cin >> mes;
-		cin >> anio;
-		if(dia>31 ||dia<1 ||mes<1 ||mes>12 ||anio<2023)
-			cout<<"Fecha invalida, ingrese los datos otra vez.\n";
-	} while(dia>31 ||dia<1 ||mes<1 ||mes>12 ||anio<2023);
+		cout<< "Ingrese el DNI del paciente: ";
+		cin >> dniPaciente;
+		cout<< "Ingrese el ID del personal a cargo de la cita: ";
+		cin >> idMedico;
+		idEncontrado= buscarID(personal, idMedico);
+		dniEncontrado= buscarDNI(paciente, dniPaciente);
+		if(!idEncontrado)
+			cout<<"No se ha encontrado el medico registrado.\n";
+		if(!dniEncontrado)
+			cout<<"No se ha encontrado el paciente registrado.\n";
+	}while(!idEncontrado || !dniEncontrado);
 	do{
-		cout<< "Insertar la hora destinada a la cita en formato 24hrs. (hh-mm): ";
-		cin >> hora;
-		cin >> min;
-		if(hora<1|| hora>24 || min<0 ||min>59)
-			cout<<"Hora invalida, ingrese los datos otra vez.\n";
-	} while(hora<1|| hora>24 || min<0 ||min>59);
+		do{
+			cout<< "Ingrese la fecha de la cita (dd/mm/yyyy): ";
+			cin >> dia;
+			cin >> mes;
+			cin >> anio;
+			if(dia>31 ||dia<1 ||mes<1 ||mes>12 ||anio<2023)
+				cout<<"Fecha invalida, ingrese los datos otra vez.\n";
+		} while(dia>31 ||dia<1 ||mes<1 ||mes>12 ||anio<2023);
+		do{
+			cout<< "Insertar la hora destinada a la cita en formato 24hrs. (hh-mm): ";
+			cin >> hora;
+			cin >> min;
+			if(hora<1|| hora>24 || min<0 ||min>59)
+				cout<<"Hora invalida, ingrese los datos otra vez.\n";
+		} while(hora<1|| hora>24 || min<0 ||min>59);
+		aux= buscarOcupado(citas, idMedico, dia, mes, anio, hora, min);
+		if(aux==1){
+			cout<< "Fecha ya ocupada por otra cita, por favor, reprograme\n";
+			desocupado=false;
+		}
+		else
+			desocupado=true;
+		aux=0;
+	} while(!desocupado);
 	nuevo->idMedico= idMedico;
 	nuevo->dniPaciente= dniPaciente;
 	nuevo->dia= dia;
@@ -385,9 +722,9 @@ TpCita crearCita(){
 	return nuevo;
 }
 
-void agendarCita(TpCita &citas, TpCita nuevo, bool existe){
+void agendarCita(TpPersonal &personal, TpPaciente &paciente, TpCita &citas, TpCita nuevo, bool existe){
 	if(existe==false){
-		nuevo = crearCita();
+		nuevo = crearCita(citas, personal, paciente);
 	}
 	TpCita p=citas;
 	
@@ -431,8 +768,8 @@ void copiarTXTCita(TpCita &citas, ofstream &CitasTXT){
 	}
 }
 
-void recuperarTXTCitas(TpCita &citas){
-	ifstream CitasTXT("\Citas.txt",ios::in);
+void recuperarTXTCitas(TpPersonal &personal, TpPaciente &paciente, TpCita &citas){
+	ifstream CitasTXT("Citas.txt",ios::in);
 	string idMedico, dniPaciente, dia, mes, anio, hora, min;
 	getline(CitasTXT,idMedico);
 	while(!CitasTXT.eof()){
@@ -452,7 +789,7 @@ void recuperarTXTCitas(TpCita &citas){
 		istringstream(hora)>>nuevo->hora;
 		istringstream(min)>>nuevo->min;
 		nuevo->sgte=NULL;
-		agendarCita(citas, nuevo, true);
+		agendarCita(personal, paciente, citas, nuevo, true);
 		getline(CitasTXT,idMedico);
 	}
 }
@@ -492,27 +829,44 @@ void eliminarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia,
 	
 }
 
-void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, int mes, int anio){
+void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, int mes, int anio, int hora, int min){
 	TpCita p= citas;
-	int diaN, mesN, anioN, minN, horaN;
+	int diaN, mesN, anioN, minN, horaN, aux;
+	bool desocupado= true;
 	while(p!=NULL){
-		if(p->idMedico==idBusqueda &&  p->dniPaciente==dniBusqueda && p->dia==dia &&p->mes==mes &&p->anio==anio){
+		if(p->idMedico==idBusqueda &&  p->dniPaciente==dniBusqueda && p->dia==dia &&p->mes==mes &&p->anio==anio && p->hora==hora &&p->min==min){
 			do{
-				cout<< "Ingrese la nueva fecha de la cita (dd/mm/yyyy): ";
-				cin>> diaN;
-				cin>> mesN;
-				cin>> anioN;
-				if(diaN>31 ||diaN<1 ||mesN<1 ||mesN>12 ||anioN<2023)
-					cout<<"Fecha invalida, ingrese los datos otra vez.\n";
-			} while(diaN>31 ||diaN<1 ||mesN<1 ||mesN>12 ||anioN<2023);
-			
-			do{
-				cout<< "Insertar la nueva hora de la cita en formato 24hrs. (hh-mm): ";
-				cin >> horaN;
-				cin >> minN;
-				if(horaN<1|| horaN>24 || minN<0 ||minN>59)
-					cout<<"Hora invalida, ingrese los datos otra vez.\n";
-			} while(horaN<1|| horaN>24 || minN<0 ||minN>59);
+				do{
+					cout<< "Ingrese la nueva fecha de la cita (dd/mm/yyyy): ";
+					cin>> diaN;
+					cin>> mesN;
+					cin>> anioN;
+					if(diaN>31 ||diaN<1 ||mesN<1 ||mesN>12 ||anioN<2023)
+						cout<<"Fecha invalida, ingrese los datos otra vez.\n";
+				} while(diaN>31 ||diaN<1 ||mesN<1 ||mesN>12 ||anioN<2023);
+				
+				do{
+					cout<< "Insertar la nueva hora de la cita en formato 24hrs. (hh-mm): ";
+					cin >> horaN;
+					cin >> minN;
+					if(horaN<1|| horaN>24 || minN<0 ||minN>59)
+						cout<<"Hora invalida, ingrese los datos otra vez.\n";
+				} while(horaN<1|| horaN>24 || minN<0 ||minN>59);
+				aux= buscarOcupado(citas, idBusqueda, diaN, mesN, anioN, horaN, minN);
+				if(aux>=1){
+					if(hora!=horaN){
+						cout<< "Fecha ya ocupada por otra cita, por favor, reprograme\n";
+						desocupado=false;
+					}
+					else if(aux==2&&hora==horaN){
+						cout<< "Fecha ya ocupada por otra cita, por favor, reprograme\n";
+						desocupado=false;
+					}
+				}
+				else
+					desocupado=true;
+				aux=0;
+			} while(!desocupado);
 			p->dia= diaN;
 			p->mes= mesN;
 			p->anio= anioN;
@@ -575,7 +929,7 @@ void insertarTXTMedicamento(TpMedicamento &medicamento, ofstream &MedicamentoTXT
 }
 
 void recuperarTXTMedicamento(TpMedicamento &medicamento){
-	ifstream MedicamentoTXT("\Medicamentos.txt",ios::in);
+	ifstream MedicamentoTXT("Medicamentos.txt",ios::in);
 	string i, p, u, c;
 	getline(MedicamentoTXT,i);
 	while(!MedicamentoTXT.eof()){
@@ -604,7 +958,7 @@ void verListaMedicamento(TpMedicamento lista){
 	}
 }
 
-void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas){
+void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medicamento, TpCita &citas){
 	int opc;
 	
 	do{
@@ -622,19 +976,19 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 			case 1:{
 				system("CLS");
 				TpPersonal nuevo = NULL;
-				ofstream PersonalTXT("\modificacion.txt",ios::app);
+				ofstream PersonalTXT("modificacion.txt",ios::app);
 				insertarPersonal(personal, nuevo, false);
 				insertarTXTPersonal(personal, PersonalTXT);
 				PersonalTXT.close();
-				remove("\Personal.txt");
-				rename("\modificacion.txt","\Personal.txt");
+				remove("Personal.txt");
+				rename("modificacion.txt","Personal.txt");
 				cout<<"\n\n\n\n";
 				verListaPersonal(personal);
 				break;
 			}
 			case 2:{
 				system("CLS");
-				ofstream MedicamentoTXT("\Medicamentos.txt",ios::app);
+				ofstream MedicamentoTXT("Medicamentos.txt",ios::app);
 				TpMedicamento nuevo = NULL;
 				insertarMedicamento(medicamento, nuevo, false);
 				insertarTXTMedicamento(medicamento, MedicamentoTXT);
@@ -645,9 +999,9 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 			}
 			case 3:{
 				system("CLS");
-				ofstream CitasTXT("\Citas.txt",ios::app);
+				ofstream CitasTXT("Citas.txt",ios::app);
 				TpCita nuevo = NULL;
-				agendarCita(citas, nuevo, false);
+				agendarCita(personal, paciente, citas, nuevo, false);
 				agendarTXTCita(citas, CitasTXT);
 				CitasTXT.close();
 				cout<<"\n\n\n\n";
@@ -663,6 +1017,8 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 				int dia;
 				int mes;
 				int anio;
+				int hora;
+				int min;
 				mostrarCitas(citas);
 				cout<< "Ingrese el id del medico encargado de la consulta: ";
 				cin>> idBusqueda;
@@ -676,7 +1032,14 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 					if(dia<1||dia>31||mes<1||mes>12||anio<2023)
 						cout<< "Fecha invalida, ingrese una correcta.";
 				} while(dia<1||dia>31||mes<1||mes>12||anio<2023);
-				buscarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio);
+				do{
+					cout<< "Insertar la hora de la cita en formato 24hrs. (hh-mm): ";
+					cin >> hora;
+					cin >> min;
+					if(hora<1|| hora>24 || min<0 ||min>59)
+						cout<<"Hora invalida, ingrese los datos otra vez.\n";
+				} while(hora<1|| hora>24 || min<0 ||min>59);
+				buscarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio, hora, min);
 				ofstream CitasTXT("\CitasMod.txt",ios::app);
 				copiarTXTCita(citas, CitasTXT);
 				CitasTXT.close();
@@ -700,11 +1063,11 @@ void menuMedico(TpPersonal &personal, TpMedicamento &medicamento, TpCita &citas)
 				cin>> mes;
 				cin>> anio;
 				eliminarCita(citas, idBusqueda, dniBusqueda, dia, mes, anio);
-				ofstream CitasTXT("\CitasMod.txt",ios::app);
+				ofstream CitasTXT("CitasMod.txt",ios::app);
 				copiarTXTCita(citas, CitasTXT);
 				CitasTXT.close();
-				remove("\Citas.txt");
-				rename("\CitasMod.txt","\Citas.txt");
+				remove("Citas.txt");
+				rename("CitasMod.txt","Citas.txt");
 				break;
 			}
 			case 7:{
@@ -724,20 +1087,24 @@ int main(){
 	TpPaciente paciente = NULL;
 	TpCita citas=NULL;
 	TpMedicamento medicamento = NULL;
+	TpHistorial historial = NULL;
+	
 	recuperarTXTPersonal(personal);
 	recuperarTXTPaciente(paciente);
-	recuperarTXTCitas(citas);
+	recuperarTXTCitas(personal, paciente, citas);
 	recuperarTXTMedicamento(medicamento);
+	recuperarTXTHistorial(historial);
+	
 	do{
 		system("CLS");
 		opc=menuPrincipal();
 		switch(opc){
 			case 1:{
-				menuPaciente(paciente, citas);
+				menuPaciente(paciente, historial, citas);
 				break;
 			}
 			case 2:{
-				menuMedico(personal, medicamento, citas);
+				menuMedico(personal, paciente, medicamento, citas);
 				break;
 			}
 		}
