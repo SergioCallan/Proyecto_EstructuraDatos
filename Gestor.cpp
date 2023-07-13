@@ -8,6 +8,8 @@ struct Paciente{
 	string nombres;
 	string apellidos;
 	string celular;
+	int edad;
+	int seguro;
 	struct Paciente *sgte;
 };
 
@@ -99,7 +101,35 @@ int menuPrincipal(){
 	return opc;
 }
 
+bool buscarID(TpPersonal personal, string idMedico){
+	
+	if(personal == NULL){
+		
+		return false;
+		
+	}
+	
+	do{
+		if(personal->id==idMedico)
+			return true;
+		personal=personal->sgte;
+	}while(personal->sgte!=personal);
+	return false;
+}
+
+bool buscarDNI(TpPaciente paciente, string dniPaciente){
+	while(paciente!=NULL){
+		if(paciente->dni==dniPaciente)
+			return true;
+		paciente=paciente->sgte;
+	}
+	return false;
+}
+
 //************************************************** HISTORIAL ******************************
+
+
+
 TpHistorial crearHistorial(string DNI, string nombreCom){
 	
 	int op;
@@ -403,11 +433,16 @@ void generarPrescripcion(string diagnostico, string medicamentos, string dni, st
 
 
 //************************************************** PACIENTE ******************************
-TpPaciente registroPaciente(){
+TpPaciente registroPaciente(TpPaciente &paciente){
 	TpPaciente nuevo = NULL;
 	nuevo = new(struct Paciente);
-	cout<<"Ingrese el dni:"<<endl;
-	cin>>nuevo->dni;
+	do{
+		cout<<"Ingrese el dni:"<<endl;
+		cin>>nuevo->dni;
+		if(buscarDNI(paciente, nuevo->dni))
+			cout<<"Este DNI ya esta registrado. Pruebe con otro ... \n";
+	}while(buscarDNI(paciente, nuevo->dni));
+	
 	cout<<"Ingrese los nombres:"<<endl;
 	cin.ignore();
 	getline(cin,nuevo->nombres);
@@ -415,14 +450,17 @@ TpPaciente registroPaciente(){
 	getline(cin,nuevo->apellidos);
 	cout<<"Ingrese el numero de telefono:"<<endl;
 	cin>>nuevo->celular;
+	cout<<"Ingrese su edad:"<<endl;
+	cin>>nuevo->edad;
+	nuevo->seguro = 0;
 	nuevo->sgte = NULL;
 	cout<<"El paciente ha sido registrado correctamente."<<endl;
 	return nuevo;
 }
 
-void insertarPaciente(TpPaciente &paciente, TpPaciente &nuevo, bool existe){
+void insertarPaciente(TpPaciente &paciente, TpPaciente nuevo, bool existe){
 	if(existe==false){
-		nuevo = registroPaciente();
+		nuevo = registroPaciente(paciente);
 	}
 	TpPaciente p=paciente;
 	if(paciente==NULL){
@@ -436,9 +474,15 @@ void insertarPaciente(TpPaciente &paciente, TpPaciente &nuevo, bool existe){
 
 void verListaPaciente(TpPaciente lista){
 	int i=0; TpPaciente p = lista;
-	cout<<"DNI - NOMBRES - APELLIDOS - CELULAR"<<endl;
+	string seguro;
+	cout<<"DNI - NOMBRES - APELLIDOS - CELULAR - EDAD - SEGURO"<<endl;
 	while(p != NULL){
-		cout<< " "<<i+1<<") "<<p->dni<<" - "<<p->nombres<<" - "<<p->apellidos<<" - "<<p->celular<< endl;
+		if(p->seguro == 0){
+			seguro = "NO";
+		}else{
+			seguro = "SI";
+		}
+		cout<< " "<<i+1<<") "<<p->dni<<" - "<<p->nombres<<" - "<<p->apellidos<<" - "<<p->celular<<" - "<<p->edad <<" - "<<seguro<< endl;
 		p=p->sgte;
 		i++;	
 	}
@@ -455,22 +499,28 @@ void insertarTXTPaciente(TpPaciente &paciente, ofstream &PacienteTXT){
 	PacienteTXT<<p->nombres<<endl;
 	PacienteTXT<<p->apellidos<<endl;
 	PacienteTXT<<p->celular<<endl;
+	PacienteTXT<<p->edad<<endl;
+	PacienteTXT<<p->seguro<<endl;
 }
 
 void recuperarTXTPaciente(TpPaciente &paciente){
 	ifstream PacienteTXT("Pacientes.txt",ios::in);
-	string d, n, a, c;
+	string d, n, a, c, e, s;
 	getline(PacienteTXT,d);
 	while(!PacienteTXT.eof()){
 		getline(PacienteTXT,n);
 		getline(PacienteTXT,a);
 		getline(PacienteTXT,c);
+		getline(PacienteTXT,e);
+		getline(PacienteTXT,s);
 		TpPaciente nuevo = NULL;
 		nuevo = new(struct Paciente);
 		nuevo->dni = d;
 		nuevo->nombres = n;
 		nuevo->apellidos = a;
 		nuevo->celular = c;
+		istringstream(e)>>nuevo->edad;
+		istringstream(s)>>nuevo->seguro;
 		nuevo->sgte=NULL;
 		insertarPaciente(paciente, nuevo, true);
 		getline(PacienteTXT,d);
@@ -550,11 +600,15 @@ void menuPaciente(TpPaciente &paciente, TpHistorial &historial, TpConsulta consu
 
 // **************************** PERSONAL ***************************
 
-TpPersonal registroPersonal(){
+TpPersonal registroPersonal(TpPersonal &personal){
 	TpPersonal nuevo = NULL;
 	nuevo = new(struct Personal);
-	cout<<"Ingrese el id:"<<endl;
-	cin>>nuevo->id;
+	do{
+		cout<<"Ingrese el id:"<<endl;
+		cin>>nuevo->id;
+		if(buscarID(personal, nuevo->id))
+			cout<<"Este ID ya esta registrado. Pruebe con otro...\n";
+	}while(buscarID(personal, nuevo->id));
 	cout<<"Ingrese los nombres:"<<endl;
 	cin.ignore();
 	getline(cin,nuevo->nombre);
@@ -602,7 +656,7 @@ void insertarPersonal(TpPersonal &personal, TpPersonal nuevo, bool existe){
 	int pos;
 	TpPersonal p=personal;
 	if(existe==false){
-		nuevo = registroPersonal();
+		nuevo = registroPersonal(personal);
 		if(personal == NULL){
 			nuevo->ant = nuevo;
 			nuevo->sgte = nuevo;
@@ -667,6 +721,76 @@ void insertarPersonal(TpPersonal &personal, TpPersonal nuevo, bool existe){
 	}
 }
 
+void eliminarTXTPersonal(TpPersonal &personal, ifstream &PersonalTXT, ofstream &Salida, int pos){
+	string id, nombre, apellidos, salario, especialidad;
+	cin.ignore();
+	getline(PersonalTXT, id); int x=1;
+	while(!PersonalTXT.eof()){
+		getline(PersonalTXT, nombre);
+		getline(PersonalTXT, apellidos);
+		getline(PersonalTXT, salario);
+		getline(PersonalTXT, especialidad);
+		if(x==pos){
+			x++;
+			if(personal == NULL)
+				break;
+		}else{
+			Salida<<id<<endl;
+			Salida<<nombre<<endl;
+			Salida<<apellidos<<endl;
+			Salida<<salario<<endl;
+			Salida<<especialidad<<endl;
+			x++;
+		}
+		getline(PersonalTXT, id);
+	}
+}
+
+void eliminarPersonal(TpPersonal &personal){
+	TpPersonal p = personal;
+	int x=1, pos; bool flag = false;
+	if(personal == NULL){
+		cout<<"No hay personal registrado...\n";
+	}else{
+		verListaPersonal(personal);
+		cout<<"Inserte la posición del personal a eliminar ---> ";cin>>pos;
+		if(pos==1){
+			if(personal->sgte == personal){
+				personal = NULL;
+				delete(p);
+			}else{
+				personal->ant->sgte = personal->sgte;
+				personal->sgte->ant = personal->ant;
+				personal = personal->sgte;
+				delete(p);
+			}
+		}else{
+			while(p->sgte != personal && x != pos){
+				p=p->sgte;
+				x++;
+				if(x==pos)
+				flag=true;
+			}	
+			if(flag==true){
+				p->ant->sgte = p->sgte;
+				p->sgte->ant = p->ant;
+				delete(p);
+			}
+			else{
+				cout<<"ERROR: Posicion No Existe en la Lista"<<endl;
+				system("pause");
+			}
+		}
+		ifstream PersonalTXT("Personal.txt",ios::in);
+		ofstream Salida("PersonalMod.txt",ios::app);
+		eliminarTXTPersonal(personal, PersonalTXT, Salida, pos);
+		PersonalTXT.close();
+		Salida.close();
+		remove("Personal.txt");
+		rename("PersonalMod.txt","Personal.txt");
+	}
+}
+
 void insertarTXTPersonal(TpPersonal &personal, ofstream &PersonalTXT){ 
 	TpPersonal p = personal;
 	if(personal!=NULL){
@@ -711,30 +835,9 @@ void recuperarTXTPersonal(TpPersonal &personal){
 
 //*********************************************  CITAS  ****************************************
 
-bool buscarID(TpPersonal personal, string idMedico){
-	
-	if(personal == NULL){
-		
-		return false;
-		
-	}
-	
-	do{
-		if(personal->id==idMedico)
-			return true;
-		personal=personal->sgte;
-	}while(personal->sgte!=personal);
-	return false;
-}
 
-bool buscarDNI(TpPaciente paciente, string dniPaciente){
-	while(paciente!=NULL){
-		if(paciente->dni==dniPaciente)
-			return true;
-		paciente=paciente->sgte;
-	}
-	return false;
-}
+
+
 
 int buscarOcupado(TpCita citas, string idMedico, int dia, int mes, int anio, int hora, int min){
 	int minutos=0, dif=0, result=0;
@@ -977,11 +1080,37 @@ void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, i
 
 //*********************************************  MEDICAMENTO  ****************************************
 
-TpMedicamento registroMedicamento(){
+void verListaMedicamento(TpMedicamento lista){
+	int i=0; TpMedicamento p = lista;
+	cout<<"ID - PRECIO - UNIDADES \t - CONTRAINDICACIONES"<<endl;
+	while(p != NULL){
+		cout<< " "<<i+1<<") "<<p->id<<" - "<<p->precio<<" - "<<p->unidades<<" -\t "<<p->contraindicaciones<< endl;
+		p=p->sgte;
+		i++;	
+	}
+}
+
+bool buscarIDMedicamento(TpMedicamento medicamento, string id){
+	if(medicamento == NULL){
+		return false;
+	}
+	do{
+		if(medicamento->id == id)
+			return true;
+		medicamento = medicamento->sgte;
+	}while(medicamento->sgte != NULL);
+	return false;
+}
+
+TpMedicamento registroMedicamento(TpMedicamento &medicamento){
 	TpMedicamento nuevo = NULL;
 	nuevo = new(struct Medicamento);
-	cout<<"Ingrese el id:"<<endl;
-	cin>>nuevo->id;
+	do{
+		cout<<"Ingrese el id:"<<endl;
+		cin>>nuevo->id;
+		if(buscarIDMedicamento(medicamento, nuevo->id))
+			cout<<"El medicamento esta registrado. Intente otra ID...\n\n";
+	}while(buscarIDMedicamento(medicamento, nuevo->id));
 	cout<<"Ingrese el precio:"<<endl;
 	cin>>nuevo->precio;
 	cout<<"Ingrese las unidades disponibles:"<<endl;
@@ -996,7 +1125,7 @@ TpMedicamento registroMedicamento(){
 
 void insertarMedicamento(TpMedicamento &medicamento, TpMedicamento nuevo, bool existe){
 	if(existe==false){
-		nuevo = registroMedicamento();
+		nuevo = registroMedicamento(medicamento);
 	}
 	TpMedicamento p=medicamento;
 	
@@ -1007,6 +1136,185 @@ void insertarMedicamento(TpMedicamento &medicamento, TpMedicamento nuevo, bool e
 			p=p->sgte;
 		p->sgte = nuevo;
 	}	
+}
+
+void modificarTXTMedicamento(TpMedicamento &medicamento, ofstream &Salida){
+	TpMedicamento p=medicamento;
+	while(p->sgte != NULL){
+		Salida<<p->id<<endl;
+		Salida<<p->precio<<endl;
+		Salida<<p->unidades<<endl;
+		Salida<<p->contraindicaciones<<endl;
+		p=p->sgte;
+	}
+	Salida<<p->id<<endl;
+	Salida<<p->precio<<endl;
+	Salida<<p->unidades<<endl;
+	Salida<<p->contraindicaciones<<endl;
+}
+
+void modificarMedicamento(TpMedicamento &medicamento){
+	TpMedicamento p = medicamento;
+	int x=1, pos, opc; bool flag = false;
+	verListaMedicamento(medicamento);
+	cout<<"Inserte la posición del personal a eliminar ---> ";cin>>pos;
+	if(pos==1){
+		if(medicamento ==NULL){
+			cout<<"\n No hay medicamentos registrados... "<<endl;
+			system("pause");
+			return;
+		}else{
+			do{
+				system("CLS");
+				cout<<"Seleccione que caracteristica desea cambiar:\n";
+				cout<<"1. Precio\n";
+				cout<<"2. Unidades\n";
+				cout<<"3. Contraindicaciones\n";
+				cout<<"4. Salir\n";
+				cin>>opc;
+				switch(opc){
+					case 1:{
+						cout<<"Ingrese el nuevo precio:\n";
+						cin>>medicamento->precio;
+						break;
+					}
+					case 2:{
+						cout<<"Ingrese la nueva cantidad de unidades:\n";
+						cin>>medicamento->unidades;
+						break;
+					}
+					case 3:{
+						cout<<"Ingrese las nuevas contraindicaciones:\n";
+						cin.ignore();
+						getline(cin,medicamento->contraindicaciones);
+						break;
+					}
+					case 4:{
+						break;
+					}
+				}
+			}while(opc != 4);
+		}
+	}else{
+		
+
+	while(p->sgte != NULL && x != pos){
+		p=p->sgte;
+		x++;
+		if(x==pos)
+			flag=true;
+	}	
+	if(flag==true){
+		do{
+			system("CLS");
+			cout<<"Seleccione que caracteristica desea cambiar:\n";
+			cout<<"1. Precio\n";
+			cout<<"2. Unidades\n";
+			cout<<"3. Contraindicaciones\n";
+			cout<<"4. Salir\n";
+			cin>>opc;
+			switch(opc){
+				case 1:{
+					cout<<"Ingrese el nuevo precio:\n";
+					cin>>p->precio;
+					break;
+				}
+				case 2:{
+					cout<<"Ingrese la nueva cantidad de unidades:\n";
+					cin>>p->unidades;
+					break;
+				}
+				case 3:{
+					cout<<"Ingrese las nuevas contraindicaciones:\n";
+					cin.ignore();
+					getline(cin,p->contraindicaciones);
+					break;
+				}
+				case 4:{
+					break;
+				}	
+			}
+		}while(opc != 4);
+	}
+	else{
+		cout<<"ERROR: Posicion No Existe en la Lista"<<endl;
+		system("pause");
+		return;
+	}}
+	ofstream Salida("MedicamentoMod.txt",ios::app);
+	modificarTXTMedicamento(medicamento, Salida);
+	Salida.close();
+	remove("Medicamentos.txt");
+	rename("MedicamentoMod.txt","Medicamentos.txt");
+}
+
+void eliminarTXTMedicamento(TpMedicamento &medicamento, ifstream &MedicamentoTXT, ofstream &Salida, int pos){
+	string id, precio, unidades, contraindicaciones;
+	cin.ignore();
+	getline(MedicamentoTXT, id); int x=1;
+	while(!MedicamentoTXT.eof()){
+		getline(MedicamentoTXT, precio);
+		getline(MedicamentoTXT, unidades);
+		getline(MedicamentoTXT, contraindicaciones);
+		if(x==pos){
+			x++;
+			if(medicamento == NULL)
+				break;
+		}else{
+			Salida<<id<<endl;
+			Salida<<precio<<endl;
+			Salida<<unidades<<endl;
+			Salida<<contraindicaciones<<endl;
+			x++;
+		}
+		getline(MedicamentoTXT, id);
+	}
+}
+
+void eliminarMedicamento(TpMedicamento &medicamento){
+	TpMedicamento p=medicamento, t=NULL;
+	int x=1, pos;
+	bool flag=false;
+	if(medicamento == NULL){
+		cout<<"\n No hay medicamentos registrados...\n";
+	}else{
+		verListaMedicamento(medicamento);
+		cout<<"Inserte la posición del personal a eliminar ---> ";cin>>pos;
+		if(pos==1){
+			t = medicamento;
+			if(medicamento->sgte == NULL){
+				medicamento = NULL;
+			}else{
+				medicamento=medicamento->sgte;
+			}
+			delete(t);
+		}else{
+			while(p->sgte != NULL && x != pos){
+				t=p;
+				p=p->sgte;
+				x++;
+				if(x==pos)
+					flag=true;
+			}	
+			if(flag==true){
+				t->sgte= p->sgte;
+				delete(p);
+				system("pause");
+			}
+			else{
+				cout<<"ERROR: Posicion No Existe en la Lista"<<endl;
+				system("pause");
+				return;
+			}
+		}
+		ifstream MedicamentoTXT("Medicamentos.txt",ios::in);
+		ofstream Salida("MedicamentosMod.txt",ios::app);
+		eliminarTXTMedicamento(medicamento, MedicamentoTXT, Salida, pos);
+		MedicamentoTXT.close();
+		Salida.close();
+		remove("Medicamentos.txt");
+		rename("MedicamentosMod.txt","Medicamentos.txt");
+	}
 }
 
 void insertarTXTMedicamento(TpMedicamento &medicamento, ofstream &MedicamentoTXT){
@@ -1043,15 +1351,7 @@ void recuperarTXTMedicamento(TpMedicamento &medicamento){
 	}
 }
 
-void verListaMedicamento(TpMedicamento lista){
-	int i=0; TpMedicamento p = lista;
-	cout<<"ID - PRECIO - UNIDADES \t - CONTRAINDICACIONES"<<endl;
-	while(p != NULL){
-		cout<< " "<<i+1<<") "<<p->id<<" - "<<p->precio<<" - "<<p->unidades<<" -\t "<<p->contraindicaciones<< endl;
-		p=p->sgte;
-		i++;	
-	}
-}
+
 
 //*************************************************ConsultasHistorial******************************************
 
@@ -1157,7 +1457,6 @@ void insertarConsulta(TpConsulta &consultas, TpCita &citas){
 	
 	while(p != NULL){
 			
-		cout<<"\n\nAYUDAAAAAAA\n\n";
 			
 		if(p->dniPaciente == dni && p->idMedico == id && p->dia == dia && p->mes == mes && p->anio == anio && p->hora == hora && p->min == min){
 					
@@ -1236,14 +1535,17 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 	do{
 		system("CLS");
 		cout<< "1. Registrar Personal\n";
-		cout<< "2. Registrar Medicinas\n";
-		cout<< "3. Crear citas\n";
-		cout<< "4. Mostrar citas totales\n";
-		cout<< "5. Editar citas\n";
-		cout<< "6. Eliminar cita\n";
-		cout<< "7. Generar prescripcion\n";
-		cout<< "8. Documnentar cita\n";		
-		cout<< "9. Regresar\n";
+		cout<< "2. Eliminar Personal\n";
+		cout<< "3. Registrar Medicinas\n";
+		cout<< "4. Modificar Medicinas\n";
+		cout<< "5. Eliminar Medicinas\n";
+		cout<< "6. Crear citas\n";
+		cout<< "7. Mostrar citas totales\n";
+		cout<< "8. Editar citas\n";
+		cout<< "9. Eliminar cita\n";
+		cout<< "10. Generar prescripcion\n";
+		cout<< "11. Documentar cita\n";		
+		cout<< "12. Regresar\n";
 		cin>> opc;
 		switch(opc){
 			case 1:{
@@ -1260,6 +1562,12 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				break;
 			}
 			case 2:{
+				eliminarPersonal(personal);
+				cout<<"\n\n\n\n";
+				verListaPersonal(personal);
+				break;
+			}
+			case 3:{
 				system("CLS");
 				ofstream MedicamentoTXT("Medicamentos.txt",ios::app);
 				TpMedicamento nuevo = NULL;
@@ -1270,7 +1578,17 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				verListaMedicamento(medicamento);
 				break;
 			}
-			case 3:{
+			case 4:{
+				system("CLS");
+				modificarMedicamento(medicamento);
+				break;
+			}
+			case 5:{
+				system("CLS");
+				eliminarMedicamento(medicamento);
+				break;
+			}
+			case 6:{
 				system("CLS");
 				ofstream CitasTXT("Citas.txt",ios::app);
 				TpCita nuevo = NULL;
@@ -1280,11 +1598,11 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				cout<<"\n\n\n\n";
 				break;
 			}
-			case 4:{
+			case 7:{
 				mostrarCitas(citas);
 				break;
 			}
-			case 5:{
+			case 8:{
 				string idBusqueda;
 				string dniBusqueda;
 				int dia;
@@ -1320,7 +1638,7 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				rename("CitasMod.txt","Citas.txt");
 				break;
 			}
-			case 6:{
+			case 9:{
 				string idBusqueda;
 				string dniBusqueda;
 				int dia;
@@ -1350,7 +1668,7 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				rename("CitasMod.txt","Citas.txt");
 				break;
 			}
-			case 7:{
+			case 10:{
 				string dni;
                 cout << "Ingrese el DNI del paciente: ";
                 cin >> dni;
@@ -1386,11 +1704,12 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 				break;
 			}
 			
-			case 8:{
-				
+			case 11:{
 				insertarConsulta(consultas, citas);
-				
-				
+				break;
+			}
+			
+			case 12:{
 				break;
 			}
 			
