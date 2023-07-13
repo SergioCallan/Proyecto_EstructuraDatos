@@ -8,8 +8,6 @@ struct Paciente{
 	string nombres;
 	string apellidos;
 	string celular;
-	int edad;
-	int seguro;
 	struct Paciente *sgte;
 };
 
@@ -450,15 +448,12 @@ TpPaciente registroPaciente(TpPaciente &paciente){
 	getline(cin,nuevo->apellidos);
 	cout<<"Ingrese el numero de telefono:"<<endl;
 	cin>>nuevo->celular;
-	cout<<"Ingrese su edad:"<<endl;
-	cin>>nuevo->edad;
-	nuevo->seguro = 0;
 	nuevo->sgte = NULL;
 	cout<<"El paciente ha sido registrado correctamente."<<endl;
 	return nuevo;
 }
 
-void insertarPaciente(TpPaciente &paciente, TpPaciente nuevo, bool existe){
+void insertarPaciente(TpPaciente &paciente, TpPaciente &nuevo, bool existe){
 	if(existe==false){
 		nuevo = registroPaciente(paciente);
 	}
@@ -475,14 +470,9 @@ void insertarPaciente(TpPaciente &paciente, TpPaciente nuevo, bool existe){
 void verListaPaciente(TpPaciente lista){
 	int i=0; TpPaciente p = lista;
 	string seguro;
-	cout<<"DNI - NOMBRES - APELLIDOS - CELULAR - EDAD - SEGURO"<<endl;
+	cout<<"DNI - NOMBRES - APELLIDOS - CELULAR"<<endl;
 	while(p != NULL){
-		if(p->seguro == 0){
-			seguro = "NO";
-		}else{
-			seguro = "SI";
-		}
-		cout<< " "<<i+1<<") "<<p->dni<<" - "<<p->nombres<<" - "<<p->apellidos<<" - "<<p->celular<<" - "<<p->edad <<" - "<<seguro<< endl;
+		cout<< " "<<i+1<<") "<<p->dni<<" - "<<p->nombres<<" - "<<p->apellidos<<" - "<<p->celular<< endl;
 		p=p->sgte;
 		i++;	
 	}
@@ -499,8 +489,6 @@ void insertarTXTPaciente(TpPaciente &paciente, ofstream &PacienteTXT){
 	PacienteTXT<<p->nombres<<endl;
 	PacienteTXT<<p->apellidos<<endl;
 	PacienteTXT<<p->celular<<endl;
-	PacienteTXT<<p->edad<<endl;
-	PacienteTXT<<p->seguro<<endl;
 }
 
 void recuperarTXTPaciente(TpPaciente &paciente){
@@ -511,16 +499,12 @@ void recuperarTXTPaciente(TpPaciente &paciente){
 		getline(PacienteTXT,n);
 		getline(PacienteTXT,a);
 		getline(PacienteTXT,c);
-		getline(PacienteTXT,e);
-		getline(PacienteTXT,s);
 		TpPaciente nuevo = NULL;
 		nuevo = new(struct Paciente);
 		nuevo->dni = d;
 		nuevo->nombres = n;
 		nuevo->apellidos = a;
 		nuevo->celular = c;
-		istringstream(e)>>nuevo->edad;
-		istringstream(s)>>nuevo->seguro;
 		nuevo->sgte=NULL;
 		insertarPaciente(paciente, nuevo, true);
 		getline(PacienteTXT,d);
@@ -1715,7 +1699,7 @@ void menuMedico(TpPersonal &personal, TpPaciente &paciente, TpMedicamento &medic
 			
 		}
 		system("pause");
-	} while(opc!=9);
+	} while(opc!=12);
 }
 
 // ******************************************* MAIN ***********************
