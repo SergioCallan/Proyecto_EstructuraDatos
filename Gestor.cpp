@@ -1040,7 +1040,7 @@ void buscarCita(TpCita &citas, string idBusqueda, string dniBusqueda, int dia, i
 						cout<< "Fecha ya ocupada por otra cita, por favor, reprograme\n";
 						desocupado=false;
 					}
-					else if(aux==2&&hora==horaN){
+					else if(aux==2){
 						cout<< "Fecha ya ocupada por otra cita, por favor, reprograme\n";
 						desocupado=false;
 					}

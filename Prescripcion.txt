@@ -1,0 +1,6 @@
+
+DNI del paciente: 1234
+Nombre del paciente: SERGIO CALLAN
+Enfermedad: Sin Especificar
+Diagnóstico: Sin Especificar
+Prescripción médica: DOLOR ABDOMINAL
